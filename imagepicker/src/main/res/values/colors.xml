@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <color name="dividerColor">#dddddd</color>
+
+    <color name="percent40BlackColor">#66000000</color>
+    <color name="percent30BlackColor">#4c000000</color>
+    <color name="percent20BlackColor">#33000000</color>
+    <color name="percent50BlackColor">#7d000000</color>
+    <color name="percent60BlackColor">#99000000</color>
+    <color name="percent70BlackColor">#B3000000</color>
+
+    <color name="main_color">#ff3193da</color>
+    <color name="grey300">#E0E0E0</color>
+    <color name="theme_body">#cc22292c</color>
+    <color name="top_bar">#9f556061</color>
+    <color name="transparent">#00000000</color>
+
+</resources>

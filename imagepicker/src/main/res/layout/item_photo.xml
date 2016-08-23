@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+    <com.wang.imagepicker.widget.SquareImageView
+        android:id="@+id/photo_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="1dip"
+        android:scaleType="centerCrop"/>
+
+    <View
+        android:id="@+id/masker_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/percent60BlackColor"/>
+
+    <CheckBox
+        android:id="@+id/selected_cb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:layout_gravity="right"
+        android:layout_margin="5dip"
+        android:button="@drawable/selector_item_checked"/>
+
+</FrameLayout>
