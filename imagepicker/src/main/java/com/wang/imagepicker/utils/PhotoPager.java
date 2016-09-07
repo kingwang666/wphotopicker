@@ -50,6 +50,10 @@ public class PhotoPager {
             activity.startActivityForResult(getIntent(activity), requestCode);
         }
 
+        public void start(@NonNull Context context) {
+            context.startActivity(getIntent(context));
+        }
+
         /**
          * Send the Intent with a custom request code
          *

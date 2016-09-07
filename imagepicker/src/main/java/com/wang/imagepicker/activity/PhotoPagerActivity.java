@@ -24,12 +24,13 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
 
     private ArrayList<Photo> photos;
     private ArrayList<String> paths;
+    private int resultCode;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_pager);
-
+        resultCode = RESULT_CANCELED;
         Intent intent = getIntent();
         if (intent != null){
             isPhoto = intent.getBooleanExtra(PhotoPager.IS_PHOTO, true);
@@ -58,13 +59,13 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
         else {
             intent.putStringArrayListExtra(PhotoPager.PHOTOS, paths);
         }
-        setResult(RESULT_OK, intent);
+        setResult(resultCode, intent);
         super.onBackPressed();
     }
 
     @Override
     public void onDelete(int currentItem) {
-
+        resultCode = RESULT_OK;
     }
 
     @Override

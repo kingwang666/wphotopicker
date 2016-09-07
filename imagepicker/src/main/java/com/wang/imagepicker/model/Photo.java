@@ -4,6 +4,11 @@ package com.wang.imagepicker.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.wang.imagepicker.utils.PhotoPicker;
+
+import java.io.File;
+import java.io.Serializable;
+
 public class Photo implements Parcelable, Cloneable{
 
     public boolean select;
@@ -11,19 +16,34 @@ public class Photo implements Parcelable, Cloneable{
     public int id;
 
     public String path;
+    /**
+     * 1 - 需要压缩，2 - 无需压缩，3 - 系统资源文件
+     */
+    public int type;
 
     public Photo(int id, String path) {
         this.id = id;
         this.path = path;
+        type = 1;
+    }
+
+    public Photo(int id, String path, int type) {
+        this.id = id;
+        this.path = path;
+        this.type = type;
     }
 
     public Photo() {
+        path = "";
+        type = 1;
     }
+
 
     protected Photo(Parcel in) {
         select = in.readByte() != 0;
         id = in.readInt();
         path = in.readString();
+        type = in.readInt();
     }
 
     @Override
@@ -31,6 +51,7 @@ public class Photo implements Parcelable, Cloneable{
         dest.writeByte((byte) (select ? 1 : 0));
         dest.writeInt(id);
         dest.writeString(path);
+        dest.writeInt(type);
     }
 
     @Override
@@ -54,10 +75,15 @@ public class Photo implements Parcelable, Cloneable{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Photo)) return false;
-
         Photo photo = (Photo) o;
+        if (photo.id == PhotoPicker.TAKE_PHOTO){
+            String[] names = photo.path.split(File.separator);
+            return path.endsWith(names[names.length - 1]);
+        }
+        else {
+            return id == photo.id || path.equals(photo.path);
+        }
 
-        return id == photo.id;
     }
 
     @Override

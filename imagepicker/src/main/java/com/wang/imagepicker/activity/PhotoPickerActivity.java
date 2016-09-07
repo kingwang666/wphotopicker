@@ -6,11 +6,13 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.PhotoGridAdapter;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
@@ -61,13 +63,14 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
     private int mLastDirPosition = 0;
 
     private String mName;
+    private boolean isDestroyed;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isDestroyed = false;
         setContentView(R.layout.activity_photo_picker);
-
         mPhotoDirectories = new ArrayList<>();
         mPhotos = new ArrayList<>();
         mImageCaptureManager = new ImageCaptureManager(this);
@@ -83,21 +86,13 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
                         PhotoDirectory directory = dirs.get(0);
                         directory.select = true;
                         mPhotoDirectories.addAll(dirs);
-                        if (mPhotos.size() == 0) {
-                            mPhotos.add(new Photo(-1, "camera"));
-                            mPhotos.addAll(directory.photos);
-                            if (mRecyclerView != null) {
-                                mName = directory.name;
-                                mSelectDirTV.setText(mName);
-                                mPositionTV.setText(mName);
-                                mRecyclerView.getAdapter().notifyDataSetChanged();
-                            }
-                        } else {
-                            Photo photo = directory.photos.get(0);
-                            if (!mPhotos.contains(photo)) {
-                                mPhotos.add(1, directory.photos.get(0));
-                                mRecyclerView.getAdapter().notifyItemInserted(1);
-                            }
+                        mPhotos.add(new Photo(-1, "camera"));
+                        mPhotos.addAll(directory.photos);
+                        if (mRecyclerView != null) {
+                            mName = directory.name;
+                            mSelectDirTV.setText(mName);
+                            mPositionTV.setText(mName);
+                            mRecyclerView.getAdapter().notifyDataSetChanged();
                         }
 
                         if (mPopUpWindow != null) {
@@ -144,10 +139,10 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
             mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
         }
         findViewById(R.id.back_img).setOnClickListener(this);
-        if (mToolbarBg != -1){
+        if (mToolbarBg != -1) {
             findViewById(R.id.toolbar).setBackgroundColor(mToolbarBg);
         }
-        if (mCompleteBg != -1){
+        if (mCompleteBg != -1) {
             mCompleteBtn.setBackgroundResource(mCompleteBg);
         }
         mCompleteBtn.setOnClickListener(this);
@@ -248,6 +243,8 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ImageCaptureManager.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             mImageCaptureManager.galleryAddPic();
+            mPhotos.add(1, new Photo(PhotoPicker.TAKE_PHOTO, mImageCaptureManager.getCurrentPhotoPath()));
+            mRecyclerView.getAdapter().notifyItemInserted(1);
         }
     }
 
@@ -315,8 +312,37 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing() && !isDestroyed){
+            destroy();
+            isDestroyed = true;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (isFinishing() && !isDestroyed){
+            destroy();
+            isDestroyed = true;
+        }
+    }
+
+    @Override
     protected void onDestroy() {
-        mImageCaptureManager.onDestroy();
+        if (!isDestroyed){
+            destroy();
+            isDestroyed = true;
+        }
         super.onDestroy();
+    }
+
+    protected void destroy(){
+        mImageCaptureManager.onDestroy();
+        MediaStoreHelper.onDestroy(this);
+        Glide.get(this).clearMemory();
+//        System.exit(0);
+//        System.gc();
     }
 }

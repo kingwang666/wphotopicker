@@ -52,7 +52,6 @@ public class MediaStoreHelper {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
             if (data == null) return;
             List<PhotoDirectory> directories = new ArrayList<>();
             PhotoDirectory photoDirectoryAll = new PhotoDirectory();
@@ -70,7 +69,7 @@ public class MediaStoreHelper {
                 photoDirectory.id = bucketId;
                 photoDirectory.name = name;
                 Photo photo = new Photo(imageId, path);
-                if (mSelectPhotos.contains(photo)){
+                if (mSelectPhotos.contains(photo)) {
                     photo.select = true;
                 }
                 if (!directories.contains(photoDirectory)) {
@@ -84,6 +83,7 @@ public class MediaStoreHelper {
 
                 photoDirectoryAll.photos.add(photo);
             }
+            data.close();
             if (photoDirectoryAll.photos.size() > 0) {
                 photoDirectoryAll.coverPath = photoDirectoryAll.photos.get(0).path;
             }
@@ -97,6 +97,10 @@ public class MediaStoreHelper {
         public void onLoaderReset(Loader<Cursor> loader) {
 
         }
+    }
+
+    public static void onDestroy(FragmentActivity activity) {
+        activity.getSupportLoaderManager().destroyLoader(0);
     }
 
 

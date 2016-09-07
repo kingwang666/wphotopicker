@@ -2,7 +2,7 @@ package com.wang.imagepicker.fragment;
 
 
 import android.os.Bundle;
-import android.text.InputFilter;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -72,13 +72,12 @@ public class ShowPicFragment extends BaseShowPicFragment {
     }
 
 
-
     @Override
     protected void afterView() {
         mItemImg.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mItemImg != null){
+                if (mItemImg != null && getActivity() != null){
                     Glide.with(ShowPicFragment.this).load(mUrl).error(R.mipmap.default_image).into(mItemImg);
                 }
             }

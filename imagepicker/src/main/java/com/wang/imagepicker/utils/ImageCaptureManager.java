@@ -34,9 +34,12 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
     private File createImageFile() throws IOException {
         // Create an image file name
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            throw new IOException("no find sd card");
+        }
         String dirName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + PhotoPicker.DIR_NAME + File.separator;
         File file = new File(dirName);
-        if (!file.exists()){
+        if (!file.exists()) {
             file.mkdirs();
         }
         File image = new File(dirName, sdf.format(new Date()) + ".jpg");
@@ -63,16 +66,23 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
 
     public void galleryAddPic() {
         mScanner.connect();
-//    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 //
-//    if (TextUtils.isEmpty(mCurrentPhotoPath)) {
-//      return;
-//    }
+//        if (TextUtils.isEmpty(mCurrentPhotoPath)) {
+//            return;
+//        }
 //
-//    File f = new File(mCurrentPhotoPath);
-//    Uri contentUri = Uri.fromFile(f);
-//    mediaScanIntent.setData(contentUri);
-//    mContext.sendBroadcast(mediaScanIntent);
+//        File f = new File(mCurrentPhotoPath);
+//        Uri contentUri = Uri.fromFile(f);
+//        mediaScanIntent.setData(contentUri);
+//        mContext.sendBroadcast(mediaScanIntent);
+    }
+
+    @Deprecated
+    public void galleryDir(String filePath){
+        Intent scanIntent = new Intent(Intent.ACTION_MEDIA_MOUNTED);
+        scanIntent.setData(Uri.fromFile(new File(filePath)));
+        mContext.sendBroadcast(scanIntent);
     }
 
 
@@ -95,7 +105,7 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
 
     @Override
     public void onMediaScannerConnected() {
-        mScanner.scanFile(mCurrentPhotoPath, null);
+        mScanner.scanFile(mCurrentPhotoPath, "image/jpg");
     }
 
     @Override

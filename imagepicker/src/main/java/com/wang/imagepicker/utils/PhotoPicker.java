@@ -16,7 +16,9 @@ import java.util.List;
 
 public class PhotoPicker {
 
-    public static String DIR_NAME = "jiudeng";
+    public static String DIR_NAME = "JiuDeng";
+
+    public static final int TAKE_PHOTO = -100;
 
     public final static String EXTRA_SELECTED_PHOTOS = "SELECTED_PHOTOS";
     public final static String EXTRA_MAX_COUNT = "MAX_COUNT";

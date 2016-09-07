@@ -303,24 +303,29 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onClick() {
-        if (mTopView.getVisibility() == View.VISIBLE || mBottomView.getVisibility() == View.VISIBLE) {
-            if (isShowTop) {
-                mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_out));
-                mTopView.setVisibility(View.GONE);
+        if (isShowTop || isShowBottom){
+            if (mTopView.getVisibility() == View.VISIBLE || mBottomView.getVisibility() == View.VISIBLE) {
+                if (isShowTop) {
+                    mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_out));
+                    mTopView.setVisibility(View.GONE);
+                }
+                if (isShowBottom) {
+                    mBottomView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.fade_out));
+                    mBottomView.setVisibility(View.GONE);
+                }
+            } else {
+                if (isShowTop) {
+                    mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_in));
+                    mTopView.setVisibility(View.VISIBLE);
+                }
+                if (isShowBottom) {
+                    mBottomView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.fade_in));
+                    mBottomView.setVisibility(View.VISIBLE);
+                }
             }
-            if (isShowBottom) {
-                mBottomView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.fade_out));
-                mBottomView.setVisibility(View.GONE);
-            }
-        } else {
-            if (isShowTop) {
-                mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_in));
-                mTopView.setVisibility(View.VISIBLE);
-            }
-            if (isShowBottom) {
-                mBottomView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.fade_in));
-                mBottomView.setVisibility(View.VISIBLE);
-            }
+        }
+        else {
+            getActivity().onBackPressed();
         }
     }
 
