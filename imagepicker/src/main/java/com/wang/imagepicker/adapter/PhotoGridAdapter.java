@@ -10,7 +10,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.R;
-import com.wang.imagepicker.interfaces.OnPhotoClickListener;
+import com.wang.imagepicker.interfaces.OnPhotoListener;
 import com.wang.imagepicker.model.Photo;
 
 import java.io.File;
@@ -28,10 +28,10 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private boolean mCheckEnabled;
     private Context mContext;
     private List<Photo> mPhotos;
-    private OnPhotoClickListener mListener;
+    private OnPhotoListener mListener;
 
 
-    public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnPhotoClickListener listener) {
+    public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnPhotoListener listener) {
         mPhotos = new ArrayList<>();
         mPhotos = photos;
         mShowCamera = showCamera;

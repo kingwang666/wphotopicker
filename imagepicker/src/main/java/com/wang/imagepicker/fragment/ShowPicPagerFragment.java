@@ -3,7 +3,6 @@ package com.wang.imagepicker.fragment;
 import android.content.Context;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,7 +25,6 @@ import com.nineoldandroids.view.ViewPropertyAnimator;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.ShowPicPagerAdapter;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
-import com.wang.imagepicker.interfaces.OnPhotoClickListener;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.widget.HackyViewPager;
 

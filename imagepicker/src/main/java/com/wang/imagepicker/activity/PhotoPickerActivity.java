@@ -1,32 +1,37 @@
 package com.wang.imagepicker.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.PhotoGridAdapter;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
-import com.wang.imagepicker.interfaces.OnPhotoClickListener;
+import com.wang.imagepicker.interfaces.OnPhotoListener;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.model.PhotoDirectory;
 import com.wang.imagepicker.utils.ImageCaptureManager;
 import com.wang.imagepicker.utils.MediaStoreHelper;
+import com.wang.imagepicker.utils.PermissionUtil;
 import com.wang.imagepicker.utils.PhotoPicker;
 import com.wang.imagepicker.widget.FolderPopUpWindow;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,7 +39,7 @@ import java.util.List;
  * Author: wang
  */
 
-public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoClickListener, OnPagerFragmentListener, View.OnClickListener {
+public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoListener, OnPagerFragmentListener, View.OnClickListener {
 
     private TextView mSelectDirTV;
     private TextView mPositionTV;
@@ -140,7 +145,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
         }
         findViewById(R.id.back_img).setOnClickListener(this);
         if (mToolbarBg != -1) {
-            findViewById(R.id.toolbar).setBackgroundColor(mToolbarBg);
+            findViewById(R.id.toolbar_view).setBackgroundColor(mToolbarBg);
         }
         if (mCompleteBg != -1) {
             mCompleteBtn.setBackgroundResource(mCompleteBg);
@@ -214,19 +219,15 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
 
     @Override
     public void onItemClick(View v, int position, boolean check) {
-        if (mPreviewEnabled) {
-            if (isNeedCamera && position == 0) {
-                takePhoto();
-            } else {
-                int[] screenLocation = new int[2];
-                v.getLocationOnScreen(screenLocation);
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(mPhotos, isNeedCamera, position, false, false, true, screenLocation, v.getWidth(), v.getHeight()), "pic_pager")
-                        .commit();
-            }
-        } else if (isNeedCamera && position == 0) {
-            takePhoto();
+        if (isNeedCamera && position == 0) {
+            requestPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        } else if (mPreviewEnabled) {
+            int[] screenLocation = new int[2];
+            v.getLocationOnScreen(screenLocation);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(mPhotos, isNeedCamera, position, false, false, true, screenLocation, v.getWidth(), v.getHeight()), "pic_pager")
+                    .commit();
         }
     }
 
@@ -236,6 +237,31 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void requestPermissions(String... permissions) {
+
+        if (PermissionUtil.checkSelfPermission(this, permissions)) {
+            ActivityCompat.requestPermissions(this, permissions, 0);
+        } else {
+            requestPermissionsEnd();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        List<String> allPermissions = Arrays.asList(permissions);
+        if (!PermissionUtil.verifyPermissions(allPermissions, grantResults)) {
+            Toast.makeText(this, "权限请求失败，无法进行拍照", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            requestPermissionsEnd();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void requestPermissionsEnd() {
+        takePhoto();
     }
 
     @Override
@@ -314,7 +340,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
     @Override
     protected void onPause() {
         super.onPause();
-        if (isFinishing() && !isDestroyed){
+        if (isFinishing() && !isDestroyed) {
             destroy();
             isDestroyed = true;
         }
@@ -323,7 +349,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
     @Override
     protected void onStop() {
         super.onStop();
-        if (isFinishing() && !isDestroyed){
+        if (isFinishing() && !isDestroyed) {
             destroy();
             isDestroyed = true;
         }
@@ -331,14 +357,14 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
 
     @Override
     protected void onDestroy() {
-        if (!isDestroyed){
+        if (!isDestroyed) {
             destroy();
             isDestroyed = true;
         }
         super.onDestroy();
     }
 
-    protected void destroy(){
+    protected void destroy() {
         mImageCaptureManager.onDestroy();
         MediaStoreHelper.onDestroy(this);
         Glide.get(this).clearMemory();

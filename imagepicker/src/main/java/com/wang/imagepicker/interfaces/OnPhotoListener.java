@@ -2,7 +2,7 @@ package com.wang.imagepicker.interfaces;
 
 import android.view.View;
 
-public interface OnPhotoClickListener extends OnRecyclerViewClickListener{
+public interface OnPhotoListener extends OnRecyclerViewClickListener{
 
     void onCheck(int position, boolean check);
 
