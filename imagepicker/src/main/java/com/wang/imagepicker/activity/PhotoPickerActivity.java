@@ -162,7 +162,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoCli
             mPopUpWindow.setMargin(mBottomView.getHeight());
             mPopUpWindow.showAtLocation(mBottomView, Gravity.NO_GRAVITY, 0, 0);
         } else if (i == R.id.back_img) {
-            finish();
+            onBackPressed();
         }
     }
 
