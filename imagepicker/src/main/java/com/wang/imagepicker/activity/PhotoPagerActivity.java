@@ -37,14 +37,15 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
             boolean showDelete = intent.getBooleanExtra(PhotoPager.SHOW_DELETE, true);
             boolean showTop = intent.getBooleanExtra(PhotoPager.SHOW_TOP, true);
             boolean haveCamera = intent.getBooleanExtra(PhotoPager.HAVE_CAMERA, false);
+            int errorImg = intent.getIntExtra(PhotoPager.ERROR_IMG, 0);
             int position = intent.getIntExtra(PhotoPager.POSITION, 0);
             if (isPhoto){
                 photos = intent.getParcelableArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(photos, haveCamera, position, showTop, showDelete, false)).commit();
+                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(photos, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
             }
             else {
                 paths = intent.getStringArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(paths, haveCamera, position, showTop, showDelete, false)).commit();
+                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(paths, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
             }
         }
 

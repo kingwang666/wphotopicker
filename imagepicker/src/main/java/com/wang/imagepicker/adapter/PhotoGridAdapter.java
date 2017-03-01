@@ -1,11 +1,11 @@
 package com.wang.imagepicker.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -75,13 +75,13 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         .error(R.mipmap.default_image)
                         .into(vh.mPhotoImg);
                 if (photo.select) {
-                    vh.mMaskerView.setVisibility(View.VISIBLE);
-                    vh.mSelectedCB.setChecked(true);
-                    vh.mSelectedCB.setEnabled(true);
+                    vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.percent50BlackColor));
+                    vh.mSelectedImg.setSelected(true);
+                    vh.mSelectedImg.setEnabled(true);
                 } else {
-                    vh.mMaskerView.setVisibility(View.GONE);
-                    vh.mSelectedCB.setChecked(false);
-                    vh.mSelectedCB.setEnabled(mCheckEnabled);
+                    vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.percent10BlackColor));
+                    vh.mSelectedImg.setSelected(false);
+                    vh.mSelectedImg.setEnabled(mCheckEnabled);
                 }
                 break;
             }
@@ -129,23 +129,24 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         private ImageView mPhotoImg;
         private View mMaskerView;
-        private CheckBox mSelectedCB;
+        private ImageView mSelectedImg;
 
         public PhotoViewHolder(View itemView) {
             super(itemView);
             mPhotoImg = (ImageView) itemView.findViewById(R.id.photo_img);
             mMaskerView = itemView.findViewById(R.id.masker_view);
-            mSelectedCB = (CheckBox) itemView.findViewById(R.id.selected_cb);
-            mSelectedCB.setOnClickListener(new View.OnClickListener() {
+            mSelectedImg = (ImageView) itemView.findViewById(R.id.selected_img);
+            mSelectedImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onCheck(getAdapterPosition(), mSelectedCB.isChecked());
+                    mSelectedImg.setSelected(!mSelectedImg.isSelected());
+                    mListener.onCheck(getAdapterPosition(), mSelectedImg.isSelected());
                 }
             });
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onItemClick(v, getAdapterPosition(), !mSelectedCB.isChecked());
+                    mListener.onItemClick(v, getAdapterPosition(), !mSelectedImg.isSelected());
                 }
             });
         }

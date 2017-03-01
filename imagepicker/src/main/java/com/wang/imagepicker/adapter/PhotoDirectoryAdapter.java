@@ -5,13 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.R;
-import com.wang.imagepicker.interfaces.OnRecyclerViewClickListener;
+import com.wang.imagepicker.interfaces.OnRecyclerViewListener;
 import com.wang.imagepicker.model.PhotoDirectory;
 
 import java.io.File;
@@ -26,11 +25,11 @@ public class PhotoDirectoryAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     private List<PhotoDirectory> mList;
 
-    private OnRecyclerViewClickListener mListener;
+    private OnRecyclerViewListener mListener;
 
     private Context mContext;
 
-    public PhotoDirectoryAdapter(List<PhotoDirectory> list, OnRecyclerViewClickListener listener) {
+    public PhotoDirectoryAdapter(List<PhotoDirectory> list, OnRecyclerViewListener listener) {
         mList = list;
         mListener = listener;
     }

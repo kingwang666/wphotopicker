@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 
 import com.wang.imagepicker.activity.PhotoPagerActivity;
@@ -25,6 +26,7 @@ public class PhotoPager {
     public final static String HAVE_CAMERA = "key_have_camera";
     public final static String SHOW_DELETE = "key_show_delete";
     public final static String SHOW_TOP = "key_show_top";
+    public final static String ERROR_IMG = "key_error_img";
     public final static String POSITION = "key_position";
 
     public static PhotoPager.PhotoPagerBuilder builder() {
@@ -82,6 +84,11 @@ public class PhotoPager {
 
         public PhotoPagerBuilder setPhotos(List<String> paths){
             mPickerOptionsBundle.putStringArrayList(PHOTOS, (ArrayList<String>) paths);
+            return this;
+        }
+
+        public PhotoPagerBuilder setErrorPhoto(@DrawableRes int resId){
+            mPickerOptionsBundle.putInt(ERROR_IMG, resId);
             return this;
         }
 

@@ -33,5 +33,7 @@ public class SquareRelativeLayout extends RelativeLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+        int width = getMeasuredWidth();
+        setMeasuredDimension(width, width);
     }
 }

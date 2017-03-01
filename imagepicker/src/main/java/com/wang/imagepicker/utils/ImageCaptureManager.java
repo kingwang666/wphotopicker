@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,13 +33,13 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
         mScanner = new MediaScannerConnection(mContext, this);
     }
 
-    private File createImageFile() throws IOException {
+    private File createImageFile(String childDirName) throws IOException {
         // Create an image file name
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
             throw new IOException("no find sd card");
         }
-        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + PhotoPicker.DIR_NAME + File.separator;
+        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + childDirName + File.separator;
         File file = new File(dirName);
         if (!file.exists()) {
             file.mkdirs();
@@ -48,19 +50,28 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
     }
 
 
-    public Intent dispatchTakePictureIntent() throws IOException {
+    public Intent dispatchTakePictureIntent(String dirName) throws IOException {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(mContext.getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = createImageFile();
+            File photoFile = createImageFile(dirName);
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getFileUri(photoFile));
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
         }
         return takePictureIntent;
+    }
+
+    private Uri getFileUri(File file){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return FileProvider.getUriForFile(mContext, "com.kaogps.examnavigation.fileprovider", file);
+        } else {
+            return Uri.fromFile(file);
+        }
     }
 
 
@@ -81,7 +92,9 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
     @Deprecated
     public void galleryDir(String filePath){
         Intent scanIntent = new Intent(Intent.ACTION_MEDIA_MOUNTED);
-        scanIntent.setData(Uri.fromFile(new File(filePath)));
+        scanIntent.setData(getFileUri(new File(filePath)));
+        scanIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                scanIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         mContext.sendBroadcast(scanIntent);
     }
 

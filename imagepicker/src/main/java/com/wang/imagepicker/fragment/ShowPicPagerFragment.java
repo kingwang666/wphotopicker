@@ -48,6 +48,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private final static String ARG_SHOW_TOP = "SHOW_TOP";
     private final static String ARG_SHOW_DELETE = "SHOW_DELETE";
     private final static String ARG_SHOW_BOTTOM = "SHOW_BOTTOM";
+    private final static String ARG_SHOW_DEFAULT = "SHOW_DEFAULT";
 
 
     private HackyViewPager mViewPager;
@@ -71,6 +72,8 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
     private int mStartItem = 0;
     private int mCurrentItem = 0;
+
+    private int mDefaultImg;
 
     private final ColorMatrix colorizerMatrix = new ColorMatrix();
     private ArrayList<String> mPaths;
@@ -97,6 +100,13 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         return f;
     }
 
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+        Bundle arg = f.getArguments();
+        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
+        return f;
+    }
+
 
     public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
         ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
@@ -106,6 +116,13 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         arg.putInt(ARG_THUMBNAIL_WIDTH, thumbnailWidth);
         arg.putInt(ARG_THUMBNAIL_HEIGHT, thumbnailHeight);
         arg.putBoolean(ARG_HAS_ANIM, true);
+        return f;
+    }
+
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom, screenLocation, thumbnailWidth, thumbnailHeight);
+        Bundle arg = f.getArguments();
+        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
         return f;
     }
 
@@ -123,8 +140,12 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         f.setArguments(args);
         return f;
     }
-
-
+    public static ShowPicPagerFragment newInstance(ArrayList<Photo> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+        Bundle arg = f.getArguments();
+        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
+        return f;
+    }
     public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
 
         ShowPicPagerFragment f = newInstance(photos, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
@@ -169,6 +190,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             thumbnailLeft = bundle.getInt(ARG_THUMBNAIL_LEFT);
             thumbnailWidth = bundle.getInt(ARG_THUMBNAIL_WIDTH);
             thumbnailHeight = bundle.getInt(ARG_THUMBNAIL_HEIGHT);
+            mDefaultImg = bundle.getInt(ARG_SHOW_DEFAULT);
         }
 
     }
@@ -190,9 +212,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         mTitleTV = (TextView) rootView.findViewById(R.id.head_view_title_tv);
         mViewPager = (HackyViewPager) rootView.findViewById(R.id.view_pager);
         if (isPhotos) {
-            mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPhotos, this));
+            mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPhotos, mDefaultImg, this));
         } else {
-            mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPaths, this));
+            mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPaths, mDefaultImg, this));
         }
         mViewPager.setCurrentItem(needCamera ? mStartItem - 1 : mStartItem);
         if (isPhotos) {
@@ -201,7 +223,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         } else {
             mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mStartItem : (mStartItem + 1), needCamera ? mPaths.size() - 1 : mPaths.size()));
         }
-        mListener.onScrolled(needCamera ? mStartItem - 1 : mStartItem);
+        if (mListener != null) {
+            mListener.onScrolled(needCamera ? mStartItem - 1 : mStartItem);
+        }
         // Only run the animation if we're coming from the parent activity, not if
         // we're recreated automatically by the window manager (e.g., device rotation)
         if (savedInstanceState == null && hasAnim) {
@@ -248,7 +272,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 } else {
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), position + 1, needCamera ? mPaths.size() - 1 : mPaths.size()));
                 }
-                mListener.onScrolled(position);
+                if (mListener != null) {
+                    mListener.onScrolled(position);
+                }
             }
 
             @Override
@@ -267,11 +293,15 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             if (isPhotos) {
                 Photo photo = mPhotos.get(mCurrentItem);
                 photo.select = !photo.select;
-                mListener.onSelect(photo, mCurrentItem);
+                if (mListener != null) {
+                    mListener.onSelect(photo, mCurrentItem);
+                }
             }
         } else if (i == R.id.head_view_delete_btn) {
             ((ShowPicPagerAdapter) mViewPager.getAdapter()).remove(mCurrentItem);
-            mListener.onDelete(mCurrentItem);
+            if (mListener != null) {
+                mListener.onDelete(mCurrentItem);
+            }
             if (isPhotos) {
                 if (mPhotos.size() == 0) {
                     getActivity().onBackPressed();
@@ -279,7 +309,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 if (mCurrentItem > mPhotos.size() - 1) {
                     mCurrentItem = mPhotos.size() - 1;
                 } else {
-                    mListener.onScrolled(needCamera ? mCurrentItem - 1 : mCurrentItem);
+                    if (mListener != null) {
+                        mListener.onScrolled(needCamera ? mCurrentItem - 1 : mCurrentItem);
+                    }
                     mSelectCB.setChecked(mPhotos.get(mCurrentItem).select);
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mCurrentItem : mCurrentItem + 1, needCamera ? mPhotos.size() - 1 : mPhotos.size()));
                 }
@@ -290,7 +322,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 if (mCurrentItem > mPaths.size() - 1) {
                     mCurrentItem = mPaths.size() - 1;
                 } else {
-                    mListener.onScrolled(needCamera ? mCurrentItem - 1 : mCurrentItem);
+                    if (mListener != null) {
+                        mListener.onScrolled(needCamera ? mCurrentItem - 1 : mCurrentItem);
+                    }
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mCurrentItem : mCurrentItem + 1, needCamera ? mPaths.size() - 1 : mPaths.size()));
                 }
             }
@@ -301,7 +335,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onClick() {
-        if (isShowTop || isShowBottom){
+        if (isShowTop || isShowBottom) {
             if (mTopView.getVisibility() == View.VISIBLE || mBottomView.getVisibility() == View.VISIBLE) {
                 if (isShowTop) {
                     mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_out));
@@ -321,8 +355,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                     mBottomView.setVisibility(View.VISIBLE);
                 }
             }
-        }
-        else {
+        } else {
             getActivity().onBackPressed();
         }
     }
@@ -404,7 +437,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
      * @param endAction This action gets run after the animation completes (this is
      *                  when we actually switch activities)
      */
-    public void runExitAnimation(final Runnable endAction) {
+    public void runExitAnimation(final Runnable endAction, boolean toOlderPosition) {
 
         if (!getArguments().getBoolean(ARG_HAS_ANIM, false) || !hasAnim) {
             endAction.run();
@@ -419,8 +452,8 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 .setInterpolator(new AccelerateInterpolator())
                 .scaleX((float) thumbnailWidth / mViewPager.getWidth())
                 .scaleY((float) thumbnailHeight / mViewPager.getHeight())
-                .translationX((mViewPager.getWidth() - thumbnailWidth) / 2)
-                .translationY((mViewPager.getHeight() - thumbnailHeight) / 2)
+                .translationX(toOlderPosition ? thumbnailLeft : ((mViewPager.getWidth() - thumbnailWidth) / 2))
+                .translationY(toOlderPosition ? thumbnailTop : ((mViewPager.getHeight() - thumbnailHeight) / 2))
                 .setListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {

@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -67,8 +68,11 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     private int mLastPosition = -1;
     private int mLastDirPosition = 0;
 
+    private String mSaveDirName = "";
+
     private String mName;
     private boolean isDestroyed;
+
 
 
     @Override
@@ -121,6 +125,10 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
             isNeedCamera = true;
             mPreviewEnabled = intent.getBooleanExtra(PhotoPicker.EXTRA_PREVIEW_ENABLED, true);
             mMaxCount = intent.getIntExtra(PhotoPicker.EXTRA_MAX_COUNT, mMaxCount);
+            mSaveDirName = intent.getStringExtra(PhotoPicker.EXTRA_SAVE_DIR);
+            if (TextUtils.isEmpty(mSaveDirName)){
+                mSaveDirName = "Photo";
+            }
             mColumn = intent.getIntExtra(PhotoPicker.EXTRA_GRID_COLUMN, mColumn);
             mToolbarBg = intent.getIntExtra(PhotoPicker.EXTRA_TOOLBAR_BG, -1);
             mCompleteBg = intent.getIntExtra(PhotoPicker.EXTRA_COMPLETE_BG, -1);
@@ -233,7 +241,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
 
     private void takePhoto() {
         try {
-            startActivityForResult(mImageCaptureManager.dispatchTakePictureIntent(), ImageCaptureManager.REQUEST_TAKE_PHOTO);
+            startActivityForResult(mImageCaptureManager.dispatchTakePictureIntent(mSaveDirName), ImageCaptureManager.REQUEST_TAKE_PHOTO);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -298,7 +306,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
                     mPositionTV.setText(mName);
                     getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                 }
-            });
+            }, false);
         } else {
             super.onBackPressed();
         }

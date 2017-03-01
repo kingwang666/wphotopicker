@@ -27,6 +27,8 @@ public class ShowPicFragment extends BaseShowPicFragment {
     private String mUrl;
     private ShowPicPagerAdapter.OnPhotoViewClickListener mListener;
 
+    private int mDefaultImg = R.mipmap.default_image;
+
     public ShowPicFragment() {
     }
 
@@ -71,6 +73,10 @@ public class ShowPicFragment extends BaseShowPicFragment {
         });
     }
 
+    @Override
+    public void onAttachFragment(Fragment childFragment) {
+        super.onAttachFragment(childFragment);
+    }
 
     @Override
     protected void afterView() {
@@ -78,7 +84,7 @@ public class ShowPicFragment extends BaseShowPicFragment {
             @Override
             public void run() {
                 if (mItemImg != null && getActivity() != null){
-                    Glide.with(ShowPicFragment.this).load(mUrl).error(R.mipmap.default_image).into(mItemImg);
+                    Glide.with(ShowPicFragment.this).load(mUrl).error(mDefaultImg).into(mItemImg);
                 }
             }
         }, 200);
@@ -90,11 +96,18 @@ public class ShowPicFragment extends BaseShowPicFragment {
         if ( mItemImg == null || TextUtils.isEmpty(mUrl) || getActivity() == null){
             return;
         }
-        Glide.with(this).load(mUrl).error(R.mipmap.default_image).into(mItemImg);
+        Glide.with(this).load(mUrl).error(mDefaultImg).into(mItemImg);
     }
 
     public ShowPicFragment setOnPhotoViewClickListener(ShowPicPagerAdapter.OnPhotoViewClickListener listener){
         mListener = listener;
+        return this;
+    }
+
+    public ShowPicFragment setDefaultImg(int defaultImg) {
+        if (defaultImg != 0) {
+            mDefaultImg = defaultImg;
+        }
         return this;
     }
 }

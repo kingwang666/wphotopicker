@@ -23,29 +23,33 @@ public class ShowPicPagerAdapter extends FragmentStatePagerAdapter {
     private boolean isPhotos;
     private boolean needCamera;
 
+    private int defaultImg;
+
     private OnPhotoViewClickListener mListener;
 
-    public ShowPicPagerAdapter(FragmentManager fm, boolean needCamera, List<String> pics, OnPhotoViewClickListener listener) {
+    public ShowPicPagerAdapter(FragmentManager fm, boolean needCamera, List<String> pics, int defaultId, OnPhotoViewClickListener listener) {
         super(fm);
         this.mPics = pics;
         mListener = listener;
         isPhotos = false;
         this.needCamera = needCamera;
+        defaultImg = defaultId;
         notifyDataSetChanged();
     }
 
-    public ShowPicPagerAdapter(FragmentManager fm, boolean needCamera, ArrayList<Photo> photos, OnPhotoViewClickListener listener) {
+    public ShowPicPagerAdapter(FragmentManager fm, boolean needCamera, ArrayList<Photo> photos, int defaultId, OnPhotoViewClickListener listener) {
         super(fm);
         this.mPhotos = photos;
         mListener = listener;
         isPhotos = true;
         this.needCamera = needCamera;
+        defaultImg = defaultId;
         notifyDataSetChanged();
     }
 
     @Override
     public Fragment getItem(int position) {
-        return ShowPicFragment.getInstance(isPhotos ? mPhotos.get(needCamera ? position + 1 : position).path : mPics.get(needCamera ? position + 1 : position)).setOnPhotoViewClickListener(mListener);
+        return ShowPicFragment.getInstance(isPhotos ? mPhotos.get(needCamera ? position + 1 : position).path : mPics.get(needCamera ? position + 1 : position)).setOnPhotoViewClickListener(mListener).setDefaultImg(defaultImg);
     }
 
     @Override

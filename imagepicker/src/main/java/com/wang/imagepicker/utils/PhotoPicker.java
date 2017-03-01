@@ -16,12 +16,11 @@ import java.util.List;
 
 public class PhotoPicker {
 
-    public static String DIR_NAME = "JiuDeng";
-
     public static final int TAKE_PHOTO = -100;
 
     public final static String EXTRA_SELECTED_PHOTOS = "SELECTED_PHOTOS";
     public final static String EXTRA_MAX_COUNT = "MAX_COUNT";
+    public final static String EXTRA_SAVE_DIR = "SAVE_DIR";
     public final static String EXTRA_SHOW_CAMERA = "SHOW_CAMERA";
     public final static String EXTRA_SHOW_GIF = "SHOW_GIF";
     public final static String EXTRA_GRID_COLUMN = "column";
@@ -76,9 +75,13 @@ public class PhotoPicker {
         }
 
 
-
         public PhotoPickerBuilder setPhotoCount(int photoCount) {
             mPickerOptionsBundle.putInt(EXTRA_MAX_COUNT, photoCount);
+            return this;
+        }
+
+        public PhotoPickerBuilder setPhotoSaveDir(String dirName) {
+            mPickerOptionsBundle.putString(EXTRA_SAVE_DIR, dirName);
             return this;
         }
 

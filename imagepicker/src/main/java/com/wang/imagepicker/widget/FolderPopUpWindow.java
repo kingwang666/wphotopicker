@@ -11,13 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.PhotoDirectoryAdapter;
-import com.wang.imagepicker.interfaces.OnRecyclerViewClickListener;
+import com.wang.imagepicker.interfaces.OnRecyclerViewListener;
 import com.wang.imagepicker.model.PhotoDirectory;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class FolderPopUpWindow extends PopupWindow implements View.OnClickListen
     private final View marginView;
     private int marginPx;
 
-    public FolderPopUpWindow(Context context, List<PhotoDirectory> photoDirectories, OnRecyclerViewClickListener listener) {
+    public FolderPopUpWindow(Context context, List<PhotoDirectory> photoDirectories, OnRecyclerViewListener listener) {
         super(context);
 
         final View view = View.inflate(context, R.layout.pop_folder, null);
