@@ -28,6 +28,7 @@ public class PhotoPager {
     public final static String SHOW_TOP = "key_show_top";
     public final static String ERROR_IMG = "key_error_img";
     public final static String POSITION = "key_position";
+    public final static String FULLSCREEN = "key_fullscreen";
 
     public static PhotoPager.PhotoPagerBuilder builder() {
         return new PhotoPager.PhotoPagerBuilder();
@@ -114,6 +115,11 @@ public class PhotoPager {
 
         public PhotoPagerBuilder setPosition(int position){
             mPickerOptionsBundle.putInt(POSITION, position);
+            return this;
+        }
+
+        public PhotoPagerBuilder setFullscreen(boolean fullScreen){
+            mPickerOptionsBundle.putBoolean(FULLSCREEN, fullScreen);
             return this;
         }
     }

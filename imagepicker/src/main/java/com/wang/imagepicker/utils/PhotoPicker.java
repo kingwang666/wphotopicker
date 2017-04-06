@@ -27,6 +27,7 @@ public class PhotoPicker {
     public final static String EXTRA_PREVIEW_ENABLED = "PREVIEW_ENABLED";
     public final static String EXTRA_TOOLBAR_BG = "TOOLBAR_BG";
     public final static String EXTRA_COMPLETE_BG = "COMPLETE_BG";
+    public final static String EXTRA_FULLSCREEN = "FULLSCREEN";
 
 
     public static PhotoPickerBuilder builder() {
@@ -123,6 +124,11 @@ public class PhotoPicker {
 
         public PhotoPickerBuilder setCompleteBg(@DrawableRes int completeBg){
             mPickerOptionsBundle.putInt(EXTRA_COMPLETE_BG, completeBg);
+            return this;
+        }
+
+        public PhotoPickerBuilder setFullscreen(boolean fullScreen){
+            mPickerOptionsBundle.putBoolean(EXTRA_FULLSCREEN, fullScreen);
             return this;
         }
     }

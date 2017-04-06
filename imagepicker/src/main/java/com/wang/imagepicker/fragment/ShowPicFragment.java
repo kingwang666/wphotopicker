@@ -5,13 +5,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.OnOutsidePhotoTapListener;
+import com.github.chrisbanes.photoview.OnPhotoTapListener;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.ShowPicPagerAdapter;
 
-import uk.co.senab.photoview.PhotoView;
-import uk.co.senab.photoview.PhotoViewAttacher;
 
 
 /**
@@ -56,16 +58,18 @@ public class ShowPicFragment extends BaseShowPicFragment {
     protected void initListener(View rootView) {
         mItemImg = (PhotoView) rootView.findViewById(R.id.item_img);
 
-        mItemImg.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
+        mItemImg.setOnPhotoTapListener(new OnPhotoTapListener() {
             @Override
-            public void onPhotoTap(View view, float x, float y) {
+            public void onPhotoTap(ImageView view, float x, float y) {
                 if (mListener != null){
                     mListener.onClick();
                 }
             }
+        });
 
+        mItemImg.setOnOutsidePhotoTapListener(new OnOutsidePhotoTapListener() {
             @Override
-            public void onOutsidePhotoTap() {
+            public void onOutsidePhotoTap(ImageView imageView) {
                 if (mListener != null){
                     mListener.onClick();
                 }

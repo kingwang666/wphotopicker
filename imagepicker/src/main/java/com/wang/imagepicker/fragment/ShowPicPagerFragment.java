@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
@@ -49,6 +50,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private final static String ARG_SHOW_DELETE = "SHOW_DELETE";
     private final static String ARG_SHOW_BOTTOM = "SHOW_BOTTOM";
     private final static String ARG_SHOW_DEFAULT = "SHOW_DEFAULT";
+    private final static String ARG_FULLSCREEN = "FULLSCREEN";
 
 
     private HackyViewPager mViewPager;
@@ -69,6 +71,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private boolean isShowDelete;
     private boolean isShowBottom;
     private boolean needCamera;
+    private boolean fullscreen = false;
 
     private int mStartItem = 0;
     private int mCurrentItem = 0;
@@ -82,7 +85,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private OnPagerFragmentListener mListener;
 
 
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
 
         ShowPicPagerFragment f = new ShowPicPagerFragment();
 
@@ -95,21 +98,22 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         args.putBoolean(ARG_SHOW_DELETE, isShowDelete);
         args.putBoolean(ARG_SHOW_BOTTOM, isShowBottom);
         args.putBoolean(ARG_NEED_CAMERA, needCamera);
+        args.putBoolean(ARG_FULLSCREEN, fullscreen);
         f.setArguments(args);
 
         return f;
     }
 
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
         Bundle arg = f.getArguments();
         arg.putInt(ARG_SHOW_DEFAULT, defaultId);
         return f;
     }
 
 
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
-        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
+        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
         Bundle arg = f.getArguments();
         arg.putInt(ARG_THUMBNAIL_LEFT, screenLocation[0]);
         arg.putInt(ARG_THUMBNAIL_TOP, screenLocation[1]);
@@ -119,14 +123,14 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         return f;
     }
 
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom, screenLocation, thumbnailWidth, thumbnailHeight);
+    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom, screenLocation, thumbnailWidth, thumbnailHeight);
         Bundle arg = f.getArguments();
         arg.putInt(ARG_SHOW_DEFAULT, defaultId);
         return f;
     }
 
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
+    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
         ShowPicPagerFragment f = new ShowPicPagerFragment();
         Bundle args = new Bundle();
         args.putParcelableArrayList(ARG_PATH, photos);
@@ -137,18 +141,21 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         args.putBoolean(ARG_SHOW_DELETE, isShowDelete);
         args.putBoolean(ARG_SHOW_BOTTOM, isShowBottom);
         args.putBoolean(ARG_NEED_CAMERA, needCamera);
+        args.putBoolean(ARG_FULLSCREEN, fullscreen);
         f.setArguments(args);
         return f;
     }
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> paths, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+
+    public static ShowPicPagerFragment newInstance(ArrayList<Photo> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
+        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
         Bundle arg = f.getArguments();
         arg.putInt(ARG_SHOW_DEFAULT, defaultId);
         return f;
     }
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
 
-        ShowPicPagerFragment f = newInstance(photos, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
+    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
+
+        ShowPicPagerFragment f = newInstance(photos, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
         Bundle arg = f.getArguments();
         arg.putInt(ARG_THUMBNAIL_LEFT, screenLocation[0]);
         arg.putInt(ARG_THUMBNAIL_TOP, screenLocation[1]);
@@ -184,6 +191,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             isShowDelete = bundle.getBoolean(ARG_SHOW_DELETE);
             isShowBottom = bundle.getBoolean(ARG_SHOW_BOTTOM);
             needCamera = bundle.getBoolean(ARG_NEED_CAMERA, false);
+            fullscreen = bundle.getBoolean(ARG_FULLSCREEN, false);
             mStartItem = bundle.getInt(ARG_START_ITEM);
             mCurrentItem = mStartItem;
             thumbnailTop = bundle.getInt(ARG_THUMBNAIL_TOP);
@@ -200,7 +208,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        if (fullscreen) {
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         View rootView = inflater.inflate(R.layout.fragment_show_pic_pager, container, false);
 
         mTopView = rootView.findViewById(R.id.top_view);
@@ -440,6 +450,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     public void runExitAnimation(final Runnable endAction, boolean toOlderPosition) {
 
         if (!getArguments().getBoolean(ARG_HAS_ANIM, false) || !hasAnim) {
+            if (fullscreen) {
+                getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
             endAction.run();
             return;
         }
@@ -463,6 +476,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
+                        if (fullscreen) {
+                            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        }
                         endAction.run();
                     }
 

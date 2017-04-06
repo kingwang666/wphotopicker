@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnRecyclerViewCli
         PhotoPager.builder()
                 .setPosition(position)
                 .setPhotos(mPhotos)
+                .setFullscreen(true)
                 .start(this, 200);
     }
 

@@ -32,20 +32,20 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
         setContentView(R.layout.activity_photo_pager);
         resultCode = RESULT_CANCELED;
         Intent intent = getIntent();
-        if (intent != null){
+        if (intent != null) {
             isPhoto = intent.getBooleanExtra(PhotoPager.IS_PHOTO, true);
             boolean showDelete = intent.getBooleanExtra(PhotoPager.SHOW_DELETE, true);
             boolean showTop = intent.getBooleanExtra(PhotoPager.SHOW_TOP, true);
             boolean haveCamera = intent.getBooleanExtra(PhotoPager.HAVE_CAMERA, false);
             int errorImg = intent.getIntExtra(PhotoPager.ERROR_IMG, 0);
             int position = intent.getIntExtra(PhotoPager.POSITION, 0);
-            if (isPhoto){
+            boolean fullscreen = intent.getBooleanExtra(PhotoPager.FULLSCREEN, false);
+            if (isPhoto) {
                 photos = intent.getParcelableArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(photos, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
-            }
-            else {
+                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(photos, fullscreen, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
+            } else {
                 paths = intent.getStringArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(paths, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
+                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(paths, fullscreen, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
             }
         }
 
@@ -54,10 +54,9 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-        if (isPhoto){
+        if (isPhoto) {
             intent.putParcelableArrayListExtra(PhotoPager.PHOTOS, photos);
-        }
-        else {
+        } else {
             intent.putStringArrayListExtra(PhotoPager.PHOTOS, paths);
         }
         setResult(resultCode, intent);

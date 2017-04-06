@@ -59,6 +59,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     private boolean isShowCamera;
     private boolean isNeedCamera;
     private boolean mPreviewEnabled;
+    private boolean mFullscreen;
     private int mMaxCount = 9;
     private int mColumn = 3;
 
@@ -132,6 +133,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
             mColumn = intent.getIntExtra(PhotoPicker.EXTRA_GRID_COLUMN, mColumn);
             mToolbarBg = intent.getIntExtra(PhotoPicker.EXTRA_TOOLBAR_BG, -1);
             mCompleteBg = intent.getIntExtra(PhotoPicker.EXTRA_COMPLETE_BG, -1);
+            mFullscreen = intent.getBooleanExtra(PhotoPicker.EXTRA_FULLSCREEN, false);
         }
     }
 
@@ -234,7 +236,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
             v.getLocationOnScreen(screenLocation);
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(mPhotos, isNeedCamera, position, false, false, true, screenLocation, v.getWidth(), v.getHeight()), "pic_pager")
+                    .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(mPhotos, mFullscreen, isNeedCamera, position, false, false, true, screenLocation, v.getWidth(), v.getHeight()), "pic_pager")
                     .commit();
         }
     }
