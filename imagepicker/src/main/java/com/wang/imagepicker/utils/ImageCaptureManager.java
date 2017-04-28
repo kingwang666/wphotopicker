@@ -19,27 +19,27 @@ import java.util.Date;
 import java.util.Locale;
 
 
-public class ImageCaptureManager implements MediaScannerConnection.MediaScannerConnectionClient {
+public class ImageCaptureManager{
 
     private final static String CAPTURED_PHOTO_PATH_KEY = "mCurrentPhotoPath";
-    public static final int REQUEST_TAKE_PHOTO = 1;
+
 
     private String mCurrentPhotoPath;
     private Context mContext;
-    private MediaScannerConnection mScanner;
 
-    public ImageCaptureManager(Context mContext) {
-        this.mContext = mContext.getApplicationContext();
-        mScanner = new MediaScannerConnection(mContext, this);
+    private PhotoScannerManager mPhotoScannerManager;
+
+    public ImageCaptureManager(Context context) {
+        this.mContext = context.getApplicationContext();
+        mPhotoScannerManager = new PhotoScannerManager(context);
     }
 
-    private File createImageFile(String childDirName) throws IOException {
+    private File createImageFile(String dirName) throws IOException {
         // Create an image file name
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
             throw new IOException("no find sd card");
         }
-        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + childDirName + File.separator;
         File file = new File(dirName);
         if (!file.exists()) {
             file.mkdirs();
@@ -76,7 +76,7 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
 
 
     public void galleryAddPic() {
-        mScanner.connect();
+        mPhotoScannerManager.connect(mCurrentPhotoPath);
 //        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 //
 //        if (TextUtils.isEmpty(mCurrentPhotoPath)) {
@@ -87,6 +87,10 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
 //        Uri contentUri = Uri.fromFile(f);
 //        mediaScanIntent.setData(contentUri);
 //        mContext.sendBroadcast(mediaScanIntent);
+    }
+
+    public PhotoScannerManager getPhotoScannerManager() {
+        return mPhotoScannerManager;
     }
 
     @Deprecated
@@ -116,20 +120,8 @@ public class ImageCaptureManager implements MediaScannerConnection.MediaScannerC
         }
     }
 
-    @Override
-    public void onMediaScannerConnected() {
-        mScanner.scanFile(mCurrentPhotoPath, "image/jpg");
-    }
-
-    @Override
-    public void onScanCompleted(String path, Uri uri) {
-        mScanner.disconnect();
-    }
-
     public void onDestroy() {
-        mScanner.disconnect();
-        mScanner.onServiceDisconnected(null);
-        mScanner = null;
+        mPhotoScannerManager.disconnect();
         mContext = null;
     }
 }

@@ -4,6 +4,7 @@ package com.wang.imagepicker.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.utils.PhotoPicker;
 
 import java.io.File;
@@ -17,7 +18,7 @@ public class Photo implements Parcelable, Cloneable{
 
     public String path;
     /**
-     * 1 - 需要压缩，2 - 无需压缩，3 - 系统资源文件
+     * 1 - 需要压缩，2 - 无需压缩，3 - 系统资源文件, 4-截图
      */
     public int type;
 
@@ -76,9 +77,12 @@ public class Photo implements Parcelable, Cloneable{
         if (this == o) return true;
         if (!(o instanceof Photo)) return false;
         Photo photo = (Photo) o;
-        if (photo.id == PhotoPicker.TAKE_PHOTO){
+        if (photo.id == Extra.TAKE_PHOTO){
             String[] names = photo.path.split(File.separator);
             return path.endsWith(names[names.length - 1]);
+        }
+        else if (photo.id == Extra.CROP){
+            return path.equals(photo.path);
         }
         else {
             return id == photo.id || path.equals(photo.path);

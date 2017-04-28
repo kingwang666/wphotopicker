@@ -1,12 +1,18 @@
 package com.wang.imagepicker.fragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,44 +24,33 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 import com.nineoldandroids.view.ViewPropertyAnimator;
+import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.ShowPicPagerAdapter;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
 import com.wang.imagepicker.model.Photo;
+import com.wang.imagepicker.utils.CropUtil;
 import com.wang.imagepicker.widget.HackyViewPager;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class ShowPicPagerFragment extends Fragment implements View.OnClickListener, ShowPicPagerAdapter.OnPhotoViewClickListener {
 
     public final static long ANIM_DURATION = 200L;
 
-    private final static String ARG_PATH = "PATHS";
-    private final static String ARG_START_ITEM = "ARG_START_ITEM";
-    private final static String ARG_IS_PHOTOS = "IS_PHOTOS";
-    private final static String ARG_THUMBNAIL_TOP = "THUMBNAIL_TOP";
-    private final static String ARG_THUMBNAIL_LEFT = "THUMBNAIL_LEFT";
-    private final static String ARG_THUMBNAIL_WIDTH = "THUMBNAIL_WIDTH";
-    private final static String ARG_THUMBNAIL_HEIGHT = "THUMBNAIL_HEIGHT";
-    private final static String ARG_NEED_CAMERA = "NEED_CAMERA";
-    private final static String ARG_HAS_ANIM = "HAS_ANIM";
-    private final static String ARG_SHOW_TOP = "SHOW_TOP";
-    private final static String ARG_SHOW_DELETE = "SHOW_DELETE";
-    private final static String ARG_SHOW_BOTTOM = "SHOW_BOTTOM";
-    private final static String ARG_SHOW_DEFAULT = "SHOW_DEFAULT";
-    private final static String ARG_FULLSCREEN = "FULLSCREEN";
-
-
     private HackyViewPager mViewPager;
     private View mTopView;
     private View mBottomView;
+    private ImageView mCropImg;
     private CheckBox mSelectCB;
     private ImageView mDeleteImg;
     private TextView mTitleTV;
@@ -66,17 +61,30 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private int thumbnailHeight = 0;
 
     private boolean hasAnim = false;
-    private boolean isPhotos;
+    private boolean isPhoto;
     private boolean isShowTop;
     private boolean isShowDelete;
     private boolean isShowBottom;
+    private boolean isAlwaysShow;
+    private boolean isShowCrop;
     private boolean needCamera;
     private boolean fullscreen = false;
+
 
     private int mStartItem = 0;
     private int mCurrentItem = 0;
 
     private int mDefaultImg;
+
+    private int mCropToolbarColor;
+    private boolean mCropFullPath;
+    private String mCropDestPath;
+    private boolean mIsCircle;
+    private float mAspectRatioX;
+    private float mAspectRatioY;
+    private int mMaxWidth;
+    private int mMaxHeight;
+    private boolean mFreeStyle;
 
     private final ColorMatrix colorizerMatrix = new ColorMatrix();
     private ArrayList<String> mPaths;
@@ -85,83 +93,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private OnPagerFragmentListener mListener;
 
 
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
-
+    public static ShowPicPagerFragment newInstance(Bundle args) {
         ShowPicPagerFragment f = new ShowPicPagerFragment();
-
-        Bundle args = new Bundle();
-        args.putStringArrayList(ARG_PATH, (ArrayList<String>) paths);
-        args.putInt(ARG_START_ITEM, currentItem);
-        args.putBoolean(ARG_HAS_ANIM, false);
-        args.putBoolean(ARG_IS_PHOTOS, false);
-        args.putBoolean(ARG_SHOW_TOP, isShowTop);
-        args.putBoolean(ARG_SHOW_DELETE, isShowDelete);
-        args.putBoolean(ARG_SHOW_BOTTOM, isShowBottom);
-        args.putBoolean(ARG_NEED_CAMERA, needCamera);
-        args.putBoolean(ARG_FULLSCREEN, fullscreen);
         f.setArguments(args);
-
-        return f;
-    }
-
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
-        Bundle arg = f.getArguments();
-        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
-        return f;
-    }
-
-
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
-        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
-        Bundle arg = f.getArguments();
-        arg.putInt(ARG_THUMBNAIL_LEFT, screenLocation[0]);
-        arg.putInt(ARG_THUMBNAIL_TOP, screenLocation[1]);
-        arg.putInt(ARG_THUMBNAIL_WIDTH, thumbnailWidth);
-        arg.putInt(ARG_THUMBNAIL_HEIGHT, thumbnailHeight);
-        arg.putBoolean(ARG_HAS_ANIM, true);
-        return f;
-    }
-
-    public static ShowPicPagerFragment newInstance(List<String> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom, screenLocation, thumbnailWidth, thumbnailHeight);
-        Bundle arg = f.getArguments();
-        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
-        return f;
-    }
-
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom) {
-        ShowPicPagerFragment f = new ShowPicPagerFragment();
-        Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_PATH, photos);
-        args.putInt(ARG_START_ITEM, currentItem);
-        args.putBoolean(ARG_HAS_ANIM, false);
-        args.putBoolean(ARG_IS_PHOTOS, true);
-        args.putBoolean(ARG_SHOW_TOP, isShowTop);
-        args.putBoolean(ARG_SHOW_DELETE, isShowDelete);
-        args.putBoolean(ARG_SHOW_BOTTOM, isShowBottom);
-        args.putBoolean(ARG_NEED_CAMERA, needCamera);
-        args.putBoolean(ARG_FULLSCREEN, fullscreen);
-        f.setArguments(args);
-        return f;
-    }
-
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> paths, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int defaultId) {
-        ShowPicPagerFragment f = newInstance(paths, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
-        Bundle arg = f.getArguments();
-        arg.putInt(ARG_SHOW_DEFAULT, defaultId);
-        return f;
-    }
-
-    public static ShowPicPagerFragment newInstance(ArrayList<Photo> photos, boolean fullscreen, boolean needCamera, int currentItem, boolean isShowTop, boolean isShowDelete, boolean isShowBottom, int[] screenLocation, int thumbnailWidth, int thumbnailHeight) {
-
-        ShowPicPagerFragment f = newInstance(photos, fullscreen, needCamera, currentItem, isShowTop, isShowDelete, isShowBottom);
-        Bundle arg = f.getArguments();
-        arg.putInt(ARG_THUMBNAIL_LEFT, screenLocation[0]);
-        arg.putInt(ARG_THUMBNAIL_TOP, screenLocation[1]);
-        arg.putInt(ARG_THUMBNAIL_WIDTH, thumbnailWidth);
-        arg.putInt(ARG_THUMBNAIL_HEIGHT, thumbnailHeight);
-        arg.putBoolean(ARG_HAS_ANIM, true);
         return f;
     }
 
@@ -180,25 +114,43 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         Bundle bundle = getArguments();
 
         if (bundle != null) {
-            isPhotos = bundle.getBoolean(ARG_IS_PHOTOS);
-            if (isPhotos) {
-                mPhotos = bundle.getParcelableArrayList(ARG_PATH);
+            isPhoto = bundle.getBoolean(Extra.EXTRA_IS_PHOTO);
+            if (isPhoto) {
+                mPhotos = bundle.getParcelableArrayList(Extra.EXTRA_PHOTOS);
             } else {
-                mPaths = bundle.getStringArrayList(ARG_PATH);
+                mPaths = bundle.getStringArrayList(Extra.EXTRA_PHOTOS);
             }
-            hasAnim = bundle.getBoolean(ARG_HAS_ANIM);
-            isShowTop = bundle.getBoolean(ARG_SHOW_TOP);
-            isShowDelete = bundle.getBoolean(ARG_SHOW_DELETE);
-            isShowBottom = bundle.getBoolean(ARG_SHOW_BOTTOM);
-            needCamera = bundle.getBoolean(ARG_NEED_CAMERA, false);
-            fullscreen = bundle.getBoolean(ARG_FULLSCREEN, false);
-            mStartItem = bundle.getInt(ARG_START_ITEM);
+            hasAnim = bundle.getBoolean(Extra.EXTRA_HAS_ANIM);
+            isShowTop = bundle.getBoolean(Extra.EXTRA_SHOW_TOP);
+            isShowDelete = bundle.getBoolean(Extra.EXTRA_SHOW_DELETE);
+            isShowBottom = bundle.getBoolean(Extra.EXTRA_SHOW_BOTTOM);
+            isAlwaysShow = bundle.getBoolean(Extra.EXTRA_ALWAYS_SHOW);
+            isShowCrop = bundle.getBoolean(Extra.EXTRA_SHOW_CROP);
+            if (isShowCrop) {
+                mCropToolbarColor = bundle.getInt(Extra.EXTRA_CROP_TOOLBAR_COLOR, -1);
+                mCropFullPath = bundle.getBoolean(Extra.EXTRA_CROP_FULL_PATH, false);
+                mCropDestPath = bundle.getString(Extra.EXTRA_CROP_DEST_PATH);
+                mIsCircle = bundle.getBoolean(Extra.EXTRA_CROP_CIRCLE, false);
+                if (TextUtils.isEmpty(mCropDestPath)) {
+                    mCropFullPath = false;
+                    mCropDestPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo";
+                }
+                mAspectRatioX = bundle.getFloat(Extra.EXTRA_CROP_ASPECT_RATIO_X, 0f);
+                mAspectRatioY = bundle.getFloat(Extra.EXTRA_CROP_ASPECT_RATIO_Y, 0f);
+                mMaxWidth = bundle.getInt(Extra.EXTRA_CROP_MAX_WIDTH, 0);
+                mMaxHeight = bundle.getInt(Extra.EXTRA_CROP_MAX_HEIGHT, 0);
+                mFreeStyle = bundle.getBoolean(Extra.EXTRA_CROP_FREE_STYLE, false);
+            }
+
+            needCamera = bundle.getBoolean(Extra.EXTRA_HAVE_CAMERA, false);
+            fullscreen = bundle.getBoolean(Extra.EXTRA_FULLSCREEN, false);
+            mStartItem = bundle.getInt(Extra.EXTRA_POSITION);
             mCurrentItem = mStartItem;
-            thumbnailTop = bundle.getInt(ARG_THUMBNAIL_TOP);
-            thumbnailLeft = bundle.getInt(ARG_THUMBNAIL_LEFT);
-            thumbnailWidth = bundle.getInt(ARG_THUMBNAIL_WIDTH);
-            thumbnailHeight = bundle.getInt(ARG_THUMBNAIL_HEIGHT);
-            mDefaultImg = bundle.getInt(ARG_SHOW_DEFAULT);
+            thumbnailTop = bundle.getInt(Extra.EXTRA_THUMBNAIL_TOP);
+            thumbnailLeft = bundle.getInt(Extra.EXTRA_THUMBNAIL_LEFT);
+            thumbnailWidth = bundle.getInt(Extra.EXTRA_THUMBNAIL_WIDTH);
+            thumbnailHeight = bundle.getInt(Extra.EXTRA_THUMBNAIL_HEIGHT);
+            mDefaultImg = bundle.getInt(Extra.EXTRA_ERROR_IMG);
         }
 
     }
@@ -217,17 +169,19 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         mBottomView = rootView.findViewById(R.id.bottom_view);
         mSelectCB = (CheckBox) rootView.findViewById(R.id.select_cb);
         mSelectCB.setOnClickListener(this);
+        mCropImg = (ImageView) rootView.findViewById(R.id.head_view_crop_btn);
+        mCropImg.setOnClickListener(this);
         mDeleteImg = (ImageView) rootView.findViewById(R.id.head_view_delete_btn);
         mDeleteImg.setOnClickListener(this);
         mTitleTV = (TextView) rootView.findViewById(R.id.head_view_title_tv);
         mViewPager = (HackyViewPager) rootView.findViewById(R.id.view_pager);
-        if (isPhotos) {
+        if (isPhoto) {
             mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPhotos, mDefaultImg, this));
         } else {
             mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPaths, mDefaultImg, this));
         }
         mViewPager.setCurrentItem(needCamera ? mStartItem - 1 : mStartItem);
-        if (isPhotos) {
+        if (isPhoto) {
             mSelectCB.setChecked(mPhotos.get(mStartItem).select);
             mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mStartItem : (mStartItem + 1), needCamera ? mPhotos.size() - 1 : mPhotos.size()));
         } else {
@@ -261,6 +215,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         } else if (!hasAnim) {
             mTopView.setVisibility(isShowTop ? View.VISIBLE : View.GONE);
             mDeleteImg.setVisibility(isShowDelete ? View.VISIBLE : View.GONE);
+            mCropImg.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
             mBottomView.setVisibility(isShowBottom ? View.VISIBLE : View.GONE);
         }
 
@@ -275,7 +230,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             public void onPageSelected(int position) {
                 mCurrentItem = needCamera ? position + 1 : position;
 //                hasAnim = mStartItem == position;
-                if (isPhotos) {
+                if (isPhoto) {
                     Photo photo = mPhotos.get(mCurrentItem);
                     mSelectCB.setChecked(photo.select);
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), position + 1, needCamera ? mPhotos.size() - 1 : mPhotos.size()));
@@ -297,10 +252,38 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == Extra.REQUEST_CROP) {
+            Uri resultUri = UCrop.getOutput(data);
+            if (resultUri != null) {
+                String path = resultUri.getPath();
+                if (isPhoto) {
+                    Photo photo = mPhotos.get(mCurrentItem);
+                    photo.id = Extra.CROP;
+                    photo.type = 4;
+                    photo.path = path;
+                }else {
+                    mPaths.set(mCurrentItem, path);
+                }
+                mViewPager.getAdapter().notifyDataSetChanged();
+                if (mListener != null){
+                    mListener.onCrop(mCurrentItem, path);
+                }
+            } else {
+                Toast.makeText(getContext(), "裁剪发生不可预知的错误", Toast.LENGTH_SHORT).show();
+            }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            Throwable cropError = UCrop.getError(data);
+            Toast.makeText(getContext(), "裁剪发生不可预知的错误", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.select_cb) {
-            if (isPhotos) {
+            if (isPhoto) {
                 Photo photo = mPhotos.get(mCurrentItem);
                 photo.select = !photo.select;
                 if (mListener != null) {
@@ -312,7 +295,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             if (mListener != null) {
                 mListener.onDelete(mCurrentItem);
             }
-            if (isPhotos) {
+            if (isPhoto) {
                 if (mPhotos.size() == 0) {
                     getActivity().onBackPressed();
                 }
@@ -339,13 +322,29 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 }
             }
             mViewPager.setCurrentItem(needCamera ? mCurrentItem - 1 : mCurrentItem);
+        } else if (i == R.id.head_view_crop_btn) {
+            UCrop.Options options = new UCrop.Options();
+            options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+            options.setFreeStyleCropEnabled(mFreeStyle);
+            if (mMaxHeight > 0 && mMaxWidth > 0) {
+                options.withMaxResultSize(mMaxWidth, mMaxHeight);
+            }
+            if (mAspectRatioX > 0f && mAspectRatioY > 0f) {
+                options.withAspectRatio(mAspectRatioX, mAspectRatioY);
+            }
+            options.setCircleDimmedLayer(mIsCircle);
+            if (mCropToolbarColor != -1) {
+                options.setToolbarColor(mCropToolbarColor);
+                options.setStatusBarColor(mCropToolbarColor);
+            }
+            CropUtil.onStartCrop(this, isPhoto ? mPhotos.get(mCurrentItem).path : mPaths.get(mCurrentItem), mCropDestPath, mCropFullPath, options, Extra.REQUEST_CROP);
         }
     }
 
 
     @Override
     public void onClick() {
-        if (isShowTop || isShowBottom) {
+        if (!isAlwaysShow && (isShowTop || isShowBottom)) {
             if (mTopView.getVisibility() == View.VISIBLE || mBottomView.getVisibility() == View.VISIBLE) {
                 if (isShowTop) {
                     mTopView.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.top_out));
@@ -406,12 +405,10 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (isShowTop) {
-                            mTopView.setVisibility(View.VISIBLE);
-                        }
-                        if (isShowBottom) {
-                            mBottomView.setVisibility(View.VISIBLE);
-                        }
+                        mTopView.setVisibility(isShowTop ? View.VISIBLE : View.GONE);
+                        mDeleteImg.setVisibility(isShowDelete ? View.VISIBLE : View.GONE);
+                        mCropImg.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
+                        mBottomView.setVisibility(isShowBottom ? View.VISIBLE : View.GONE);
                     }
 
                     @Override
@@ -449,7 +446,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
      */
     public void runExitAnimation(final Runnable endAction, boolean toOlderPosition) {
 
-        if (!getArguments().getBoolean(ARG_HAS_ANIM, false) || !hasAnim) {
+        if (!hasAnim) {
             if (fullscreen) {
                 getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             }

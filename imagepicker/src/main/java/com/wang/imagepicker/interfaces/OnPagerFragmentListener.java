@@ -9,6 +9,8 @@ import com.wang.imagepicker.model.Photo;
 
 public interface OnPagerFragmentListener {
 
+    void onCrop(int position, String path);
+
     void onDelete(int currentItem);
 
     void onScrolled(int position);

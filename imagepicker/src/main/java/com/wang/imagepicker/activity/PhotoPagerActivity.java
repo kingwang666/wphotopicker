@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
@@ -33,20 +34,13 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
         resultCode = RESULT_CANCELED;
         Intent intent = getIntent();
         if (intent != null) {
-            isPhoto = intent.getBooleanExtra(PhotoPager.IS_PHOTO, true);
-            boolean showDelete = intent.getBooleanExtra(PhotoPager.SHOW_DELETE, true);
-            boolean showTop = intent.getBooleanExtra(PhotoPager.SHOW_TOP, true);
-            boolean haveCamera = intent.getBooleanExtra(PhotoPager.HAVE_CAMERA, false);
-            int errorImg = intent.getIntExtra(PhotoPager.ERROR_IMG, 0);
-            int position = intent.getIntExtra(PhotoPager.POSITION, 0);
-            boolean fullscreen = intent.getBooleanExtra(PhotoPager.FULLSCREEN, false);
+            isPhoto = intent.getBooleanExtra(Extra.EXTRA_IS_PHOTO, true);
             if (isPhoto) {
-                photos = intent.getParcelableArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(photos, fullscreen, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
+                photos = intent.getParcelableArrayListExtra(Extra.EXTRA_PHOTOS);
             } else {
-                paths = intent.getStringArrayListExtra(PhotoPager.PHOTOS);
-                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(paths, fullscreen, haveCamera, position, showTop, showDelete, false, errorImg)).commit();
+                paths = intent.getStringArrayListExtra(Extra.EXTRA_PHOTOS);
             }
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, ShowPicPagerFragment.newInstance(intent.getExtras())).commit();
         }
 
     }
@@ -55,12 +49,17 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
     public void onBackPressed() {
         Intent intent = new Intent();
         if (isPhoto) {
-            intent.putParcelableArrayListExtra(PhotoPager.PHOTOS, photos);
+            intent.putParcelableArrayListExtra(Extra.EXTRA_PHOTOS, photos);
         } else {
-            intent.putStringArrayListExtra(PhotoPager.PHOTOS, paths);
+            intent.putStringArrayListExtra(Extra.EXTRA_PHOTOS, paths);
         }
         setResult(resultCode, intent);
         super.onBackPressed();
+    }
+
+    @Override
+    public void onCrop(int position, String path) {
+        resultCode = RESULT_OK;
     }
 
     @Override

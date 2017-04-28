@@ -17,5 +17,6 @@
     <color name="theme_body">#cc22292c</color>
     <color name="top_bar">#9f556061</color>
     <color name="transparent">#00000000</color>
+    <color name="video_bottom_alpha">#44000000</color>
 
 </resources>

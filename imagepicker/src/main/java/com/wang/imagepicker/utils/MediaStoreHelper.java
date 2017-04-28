@@ -3,12 +3,17 @@ package com.wang.imagepicker.utils;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
+import com.wang.imagepicker.Extra;
+import com.wang.imagepicker.loader.PhotoDirectoryLoader;
+import com.wang.imagepicker.loader.VideoLoader;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.model.PhotoDirectory;
+import com.wang.imagepicker.model.Video;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -27,19 +32,25 @@ public class MediaStoreHelper {
     public final static int INDEX_ALL_PHOTOS = 0;
 
 
-    public static void getPhotoDirs(FragmentActivity activity, Bundle args, PhotosResultCallback resultCallback) {
-        ArrayList<Photo> selectPhotos = args.getParcelableArrayList(PhotoPicker.EXTRA_SELECTED_PHOTOS);
+    public static void getPhotoDirs(FragmentActivity activity, Bundle args, OnPhotosResultCallback resultCallback) {
+        ArrayList<Photo> selectPhotos = args.getParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS);
         activity.getSupportLoaderManager()
                 .initLoader(0, args, new PhotoDirLoaderCallbacks(activity, selectPhotos, resultCallback));
     }
 
-    static class PhotoDirLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static void getVideos(FragmentActivity activity, Bundle args, OnVideoResultCallback callback) {
+        ArrayList<Video> selectVideo = args.getParcelableArrayList(Extra.EXTRA_SELECTED_VIDEOS);
+        activity.getSupportLoaderManager()
+                .initLoader(0, args, new VideoLoaderCallbacks(activity, selectVideo, callback));
+    }
+
+    private static class PhotoDirLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
 
         private WeakReference<Context> context;
-        private PhotosResultCallback resultCallback;
+        private OnPhotosResultCallback resultCallback;
         private ArrayList<Photo> mSelectPhotos;
 
-        public PhotoDirLoaderCallbacks(Context context, ArrayList<Photo> selectPhotos, PhotosResultCallback resultCallback) {
+        public PhotoDirLoaderCallbacks(Context context, ArrayList<Photo> selectPhotos, OnPhotosResultCallback resultCallback) {
             this.context = new WeakReference<>(context);
             this.resultCallback = resultCallback;
             mSelectPhotos = selectPhotos;
@@ -47,7 +58,7 @@ public class MediaStoreHelper {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            return new PhotoDirectoryLoader(context.get(), args.getBoolean(PhotoPicker.EXTRA_SHOW_GIF, false));
+            return new PhotoDirectoryLoader(context.get(), args.getBoolean(Extra.EXTRA_SHOW_GIF, false));
         }
 
         @Override
@@ -104,8 +115,70 @@ public class MediaStoreHelper {
     }
 
 
-    public interface PhotosResultCallback {
+    private static class VideoLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        private WeakReference<Context> context;
+        private OnVideoResultCallback resultCallback;
+        private ArrayList<Video> mSelectVideos;
+
+        public VideoLoaderCallbacks(Context context, ArrayList<Video> selectVideos, OnVideoResultCallback resultCallback) {
+            this.context = new WeakReference<>(context);
+            this.resultCallback = resultCallback;
+            mSelectVideos = selectVideos;
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            return new VideoLoader(context.get());
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (data == null) return;
+            List<Video> videos = new ArrayList<>();
+
+            while (data.moveToNext()) {
+
+                String path = data.getString(data.getColumnIndex(MediaStore.Video.Media.DATA));
+                int id = data.getInt(data.getColumnIndex(MediaStore.Video.Media._ID));
+                String title = data.getString(data.getColumnIndex(MediaStore.Video.Media.TITLE));
+                String type = data.getString(data.getColumnIndex(MediaStore.Video.Media.MIME_TYPE));
+                long size = data.getLong(data.getColumnIndex(MediaStore.Video.Media.SIZE));
+                String date = data.getString(data.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN));
+                long duration = data.getLong(data.getColumnIndex(MediaStore.Video.Media.DURATION));
+
+                Video video = new Video(id, path);
+                video.title = title;
+                video.mimeType = type;
+                video.size = size;
+                video.dateTaken = date;
+                video.duration = duration;
+
+                videos.add(video);
+                if (mSelectVideos.contains(video)) {
+                    video.select = true;
+                }
+
+            }
+            data.close();
+
+            if (resultCallback != null) {
+                resultCallback.onResultCallback(videos);
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
+    }
+
+    public interface OnPhotosResultCallback {
         void onResultCallback(List<PhotoDirectory> directories);
+    }
+
+    public interface OnVideoResultCallback {
+        void onResultCallback(List<Video> videos);
     }
 
 }

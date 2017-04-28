@@ -1,12 +1,14 @@
 package com.wang.imagepicker.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class PhotoDirectory {
+public class PhotoDirectory implements Parcelable{
 
     public boolean select;
 
@@ -19,6 +21,31 @@ public class PhotoDirectory {
     public long dateAdded;
 
     public List<Photo> photos = new ArrayList<>();
+
+    public PhotoDirectory(){
+
+    }
+
+    protected PhotoDirectory(Parcel in) {
+        select = in.readByte() != 0;
+        id = in.readString();
+        coverPath = in.readString();
+        name = in.readString();
+        dateAdded = in.readLong();
+        photos = in.createTypedArrayList(Photo.CREATOR);
+    }
+
+    public static final Creator<PhotoDirectory> CREATOR = new Creator<PhotoDirectory>() {
+        @Override
+        public PhotoDirectory createFromParcel(Parcel in) {
+            return new PhotoDirectory(in);
+        }
+
+        @Override
+        public PhotoDirectory[] newArray(int size) {
+            return new PhotoDirectory[size];
+        }
+    };
 
     @Override
     public boolean equals(Object o) {
@@ -55,5 +82,18 @@ public class PhotoDirectory {
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeByte((byte) (select ? 1 : 0));
+        dest.writeString(id);
+        dest.writeString(coverPath);
+        dest.writeString(name);
+        dest.writeLong(dateAdded);
+        dest.writeTypedList(photos);
+    }
 }

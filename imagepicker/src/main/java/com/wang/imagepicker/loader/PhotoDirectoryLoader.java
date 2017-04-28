@@ -1,4 +1,4 @@
-package com.wang.imagepicker.utils;
+package com.wang.imagepicker.loader;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,7 +10,7 @@ import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
 
 public class PhotoDirectoryLoader extends CursorLoader {
 
-  final String[] IMAGE_PROJECTION = {
+  private final static String[] IMAGE_PROJECTION = {
       Media._ID,
       Media.DATA,
       Media.BUCKET_ID,

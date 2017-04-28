@@ -25,9 +25,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
         <activity android:name="com.wang.imagepicker.activity.PhotoPagerActivity"/>
 
         <activity android:name="com.wang.imagepicker.activity.PhotoPickerActivity"/>
+
+        <activity android:name="com.wang.imagepicker.activity.VideoPickerActivity"/>
     </application>
 
 </manifest>

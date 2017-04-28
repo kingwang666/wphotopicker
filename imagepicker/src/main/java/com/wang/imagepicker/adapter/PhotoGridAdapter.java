@@ -10,7 +10,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.R;
-import com.wang.imagepicker.interfaces.OnPhotoListener;
+import com.wang.imagepicker.interfaces.OnMediaListener;
 import com.wang.imagepicker.model.Photo;
 
 import java.io.File;
@@ -28,10 +28,10 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private boolean mCheckEnabled;
     private Context mContext;
     private List<Photo> mPhotos;
-    private OnPhotoListener mListener;
+    private OnMediaListener mListener;
 
 
-    public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnPhotoListener listener) {
+    public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnMediaListener listener) {
         mPhotos = new ArrayList<>();
         mPhotos = photos;
         mShowCamera = showCamera;
@@ -139,14 +139,13 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             mSelectedImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mSelectedImg.setSelected(!mSelectedImg.isSelected());
-                    mListener.onCheck(getAdapterPosition(), mSelectedImg.isSelected());
+                    mListener.onCheck(getAdapterPosition(), !mSelectedImg.isSelected());
                 }
             });
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onItemClick(v, getAdapterPosition(), !mSelectedImg.isSelected());
+                    mListener.onItemClick(v, getAdapterPosition(), mSelectedImg.isSelected());
                 }
             });
         }

@@ -2,6 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
     android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -16,32 +17,39 @@
     </com.wang.imagepicker.widget.HackyViewPager>
 
 
-    <RelativeLayout
+    <FrameLayout
         android:id="@+id/top_view"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@color/theme_body"
-        android:visibility="gone">
+        android:visibility="gone"
+        tool:visibility="visible">
+
+        <ImageView
+            android:id="@+id/head_view_crop_btn"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@drawable/ic_crop_24dp"/>
 
         <TextView
             android:id="@+id/head_view_title_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_gravity="center"
             android:textColor="@color/white"/>
 
         <ImageView
             android:id="@+id/head_view_delete_btn"
             android:layout_width="50dp"
             android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:layout_centerInParent="true"
+            android:layout_gravity="end"
             android:scaleType="center"
             android:src="@mipmap/ic_bin"/>
-    </RelativeLayout>
+    </FrameLayout>
 
 
-    <RelativeLayout
+    <FrameLayout
         android:id="@+id/bottom_view"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -53,14 +61,13 @@
             android:id="@+id/select_cb"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
+            android:layout_gravity="right|center_vertical"
             android:layout_marginRight="16dp"
             android:button="@drawable/selector_item_checked"
             android:text="选择"
             android:padding="4dp"
             android:textColor="@color/white"/>
 
-    </RelativeLayout>
+    </FrameLayout>
 
 </FrameLayout>

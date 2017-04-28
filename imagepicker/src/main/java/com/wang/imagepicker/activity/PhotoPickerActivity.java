@@ -1,8 +1,15 @@
 package com.wang.imagepicker.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -17,19 +24,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.PhotoGridAdapter;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
-import com.wang.imagepicker.interfaces.OnPhotoListener;
+import com.wang.imagepicker.interfaces.OnMediaListener;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.model.PhotoDirectory;
+import com.wang.imagepicker.utils.CropUtil;
 import com.wang.imagepicker.utils.ImageCaptureManager;
 import com.wang.imagepicker.utils.MediaStoreHelper;
 import com.wang.imagepicker.utils.PermissionUtil;
+import com.wang.imagepicker.utils.PhotoPager;
 import com.wang.imagepicker.utils.PhotoPicker;
 import com.wang.imagepicker.widget.FolderPopUpWindow;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,12 +52,13 @@ import java.util.List;
  * Author: wang
  */
 
-public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoListener, OnPagerFragmentListener, View.OnClickListener {
+public class PhotoPickerActivity extends AppCompatActivity implements OnMediaListener, OnPagerFragmentListener, View.OnClickListener {
 
     private TextView mSelectDirTV;
     private TextView mPositionTV;
     private Button mCompleteBtn;
     private RecyclerView mRecyclerView;
+    private View mToolbarView;
     private View mBottomView;
     private FolderPopUpWindow mPopUpWindow;
 
@@ -60,20 +73,28 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     private boolean isNeedCamera;
     private boolean mPreviewEnabled;
     private boolean mFullscreen;
+    private boolean mCrop;
     private int mMaxCount = 9;
     private int mColumn = 3;
+
+    private boolean mCropFullPath;
+    private String mCropDestPath;
+    private boolean mIsCircle;
+    private float mAspectRatioX;
+    private float mAspectRatioY;
+    private int mMaxWidth;
+    private int mMaxHeight;
+    private boolean mFreeStyle;
 
     private int mToolbarBg;
     private int mCompleteBg;
 
-    private int mLastPosition = -1;
     private int mLastDirPosition = 0;
 
     private String mSaveDirName = "";
 
     private String mName;
     private boolean isDestroyed;
-
 
 
     @Override
@@ -86,10 +107,10 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
         mImageCaptureManager = new ImageCaptureManager(this);
         initData(getIntent());
         Bundle mediaStoreArgs = new Bundle();
-        mediaStoreArgs.putParcelableArrayList(PhotoPicker.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
-        mediaStoreArgs.putBoolean(PhotoPicker.EXTRA_SHOW_GIF, isShowGif);
+        mediaStoreArgs.putParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
+        mediaStoreArgs.putBoolean(Extra.EXTRA_SHOW_GIF, isShowGif);
         MediaStoreHelper.getPhotoDirs(this, mediaStoreArgs,
-                new MediaStoreHelper.PhotosResultCallback() {
+                new MediaStoreHelper.OnPhotosResultCallback() {
                     @Override
                     public void onResultCallback(List<PhotoDirectory> dirs) {
                         mPhotoDirectories.clear();
@@ -116,24 +137,41 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     private void initData(Intent intent) {
         if (intent != null) {
             if (mSelectPhotos == null) {
-                mSelectPhotos = intent.getParcelableArrayListExtra(PhotoPicker.EXTRA_SELECTED_PHOTOS);
+                mSelectPhotos = intent.getParcelableArrayListExtra(Extra.EXTRA_SELECTED_PHOTOS);
                 if (mSelectPhotos == null) {
                     mSelectPhotos = new ArrayList<>();
                 }
             }
-            isShowGif = intent.getBooleanExtra(PhotoPicker.EXTRA_SHOW_GIF, false);
-            isShowCamera = intent.getBooleanExtra(PhotoPicker.EXTRA_SHOW_CAMERA, true);
-            isNeedCamera = true;
-            mPreviewEnabled = intent.getBooleanExtra(PhotoPicker.EXTRA_PREVIEW_ENABLED, true);
-            mMaxCount = intent.getIntExtra(PhotoPicker.EXTRA_MAX_COUNT, mMaxCount);
-            mSaveDirName = intent.getStringExtra(PhotoPicker.EXTRA_SAVE_DIR);
-            if (TextUtils.isEmpty(mSaveDirName)){
-                mSaveDirName = "Photo";
+            isShowGif = intent.getBooleanExtra(Extra.EXTRA_SHOW_GIF, false);
+            isShowCamera = intent.getBooleanExtra(Extra.EXTRA_SHOW_CAMERA, true);
+            isNeedCamera = isShowCamera;
+            mPreviewEnabled = intent.getBooleanExtra(Extra.EXTRA_PREVIEW_ENABLED, true);
+            mMaxCount = intent.getIntExtra(Extra.EXTRA_MAX_COUNT, mMaxCount);
+            if (mMaxCount == 1) {
+                mCrop = intent.getBooleanExtra(Extra.EXTRA_CROP, false);
+                if (mCrop) {
+                    mCropFullPath = intent.getBooleanExtra(Extra.EXTRA_CROP_FULL_PATH, false);
+                    mCropDestPath = intent.getStringExtra(Extra.EXTRA_CROP_DEST_PATH);
+                    mIsCircle = intent.getBooleanExtra(Extra.EXTRA_CROP_CIRCLE, false);
+                    if (TextUtils.isEmpty(mCropDestPath)) {
+                        mCropFullPath = false;
+                        mCropDestPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo";
+                    }
+                    mAspectRatioX = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_X, 0f);
+                    mAspectRatioY = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_Y, 0f);
+                    mMaxWidth = intent.getIntExtra(Extra.EXTRA_CROP_MAX_WIDTH, 0);
+                    mMaxHeight = intent.getIntExtra(Extra.EXTRA_CROP_MAX_HEIGHT, 0);
+                    mFreeStyle = intent.getBooleanExtra(Extra.EXTRA_CROP_FREE_STYLE, false);
+                }
             }
-            mColumn = intent.getIntExtra(PhotoPicker.EXTRA_GRID_COLUMN, mColumn);
-            mToolbarBg = intent.getIntExtra(PhotoPicker.EXTRA_TOOLBAR_BG, -1);
-            mCompleteBg = intent.getIntExtra(PhotoPicker.EXTRA_COMPLETE_BG, -1);
-            mFullscreen = intent.getBooleanExtra(PhotoPicker.EXTRA_FULLSCREEN, false);
+            mSaveDirName = intent.getStringExtra(Extra.EXTRA_SAVE_DIR);
+            if (TextUtils.isEmpty(mSaveDirName)) {
+                mSaveDirName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo";
+            }
+            mColumn = intent.getIntExtra(Extra.EXTRA_GRID_COLUMN, mColumn);
+            mToolbarBg = intent.getIntExtra(Extra.EXTRA_TOOLBAR_BG, -1);
+            mCompleteBg = intent.getIntExtra(Extra.EXTRA_COMPLETE_BG, -1);
+            mFullscreen = intent.getBooleanExtra(Extra.EXTRA_FULLSCREEN, false);
         }
     }
 
@@ -142,20 +180,29 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
         mBottomView = findViewById(R.id.bottom_bar);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, mColumn));
-        mRecyclerView.setAdapter(new PhotoGridAdapter(mPhotos, isShowCamera, mSelectPhotos.size() < mMaxCount, this));
+        mRecyclerView.setAdapter(new PhotoGridAdapter(mPhotos, isShowCamera, mSelectPhotos.size() < mMaxCount || mMaxCount == 1, this));
         mPositionTV = (TextView) findViewById(R.id.position_tv);
+        mToolbarView = findViewById(R.id.toolbar_view);
         if (mPhotos.size() > 0) {
             mName = mPhotoDirectories.get(0).name;
             mSelectDirTV.setText(mName);
             mPositionTV.setText(mName);
         }
         mCompleteBtn = (Button) findViewById(R.id.complete_btn);
+        if (mMaxCount == 1) {
+            mCompleteBtn.setVisibility(View.GONE);
+        }
         if (mSelectPhotos.size() > 0) {
             mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
         }
         findViewById(R.id.back_img).setOnClickListener(this);
         if (mToolbarBg != -1) {
-            findViewById(R.id.toolbar_view).setBackgroundColor(mToolbarBg);
+            mToolbarView.setBackgroundColor(mToolbarBg);
+        } else {
+            Drawable drawable = mToolbarView.getBackground();
+            if (drawable instanceof ColorDrawable) {
+                mToolbarBg = ((ColorDrawable) drawable).getColor();
+            }
         }
         if (mCompleteBg != -1) {
             mCompleteBtn.setBackgroundResource(mCompleteBg);
@@ -164,14 +211,34 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
         mSelectDirTV.setOnClickListener(this);
     }
 
+    private void selectOver() {
+        Intent intent = new Intent();
+        intent.putParcelableArrayListExtra(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     @Override
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.complete_btn) {
-            Intent intent = new Intent();
-            intent.putParcelableArrayListExtra(PhotoPicker.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
-            setResult(RESULT_OK, intent);
-            finish();
+            if (mCrop && mSelectPhotos.size() == 1) {
+                UCrop.Options options = new UCrop.Options();
+                options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+                options.setFreeStyleCropEnabled(mFreeStyle);
+                if (mMaxHeight > 0 && mMaxWidth > 0) {
+                    options.withMaxResultSize(mMaxWidth, mMaxHeight);
+                }
+                if (mAspectRatioX > 0f && mAspectRatioY > 0f) {
+                    options.withAspectRatio(mAspectRatioX, mAspectRatioY);
+                }
+                options.setCircleDimmedLayer(mIsCircle);
+                options.setToolbarColor(mToolbarBg);
+                options.setStatusBarColor(mToolbarBg);
+                CropUtil.onStartCrop(this, mSelectPhotos.get(0).path, mCropDestPath, mCropFullPath, options, Extra.REQUEST_CROP);
+            } else {
+                selectOver();
+            }
         } else if (i == R.id.select_dir_tv) {
             mPopUpWindow = new FolderPopUpWindow(PhotoPickerActivity.this, mPhotoDirectories, this);
             mPopUpWindow.setMargin(mBottomView.getHeight());
@@ -216,15 +283,17 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
                 lastPhoto.select = false;
                 mSelectPhotos.remove(0);
             }
-            mLastPosition = position;
             mSelectPhotos.add(photo);
         } else {
             mSelectPhotos.remove(photo);
-            mLastPosition = -1;
         }
         adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
         adapter.notifyDataSetChanged();
-        mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+        if (mMaxCount > 1) {
+            mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+        } else if (check) {
+            onClick(mCompleteBtn);
+        }
     }
 
     @Override
@@ -234,16 +303,28 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
         } else if (mPreviewEnabled) {
             int[] screenLocation = new int[2];
             v.getLocationOnScreen(screenLocation);
+            Bundle args = PhotoPager.builderFragment()
+                    .setPhotos(mPhotos)
+                    .setFullscreen(mFullscreen)
+                    .setHaveCamera(isNeedCamera)
+                    .setPosition(position)
+                    .setHasAnim(true)
+                    .setShowTop(false)
+                    .setShowBottom(true)
+                    .setThumbanil(screenLocation, v.getWidth(), v.getHeight())
+                    .getBundle();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(mPhotos, mFullscreen, isNeedCamera, position, false, false, true, screenLocation, v.getWidth(), v.getHeight()), "pic_pager")
+                    .replace(R.id.fragment_container, ShowPicPagerFragment.newInstance(args), "pic_pager")
                     .commit();
+        } else {
+            onCheck(position, !check);
         }
     }
 
     private void takePhoto() {
         try {
-            startActivityForResult(mImageCaptureManager.dispatchTakePictureIntent(mSaveDirName), ImageCaptureManager.REQUEST_TAKE_PHOTO);
+            startActivityForResult(mImageCaptureManager.dispatchTakePictureIntent(mSaveDirName), Extra.REQUEST_TAKE_PHOTO);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -263,8 +344,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
         List<String> allPermissions = Arrays.asList(permissions);
         if (!PermissionUtil.verifyPermissions(allPermissions, grantResults)) {
             Toast.makeText(this, "权限请求失败，无法进行拍照", Toast.LENGTH_SHORT).show();
-        }
-        else {
+        } else {
             requestPermissionsEnd();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -277,24 +357,53 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ImageCaptureManager.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+        if (requestCode == Extra.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             mImageCaptureManager.galleryAddPic();
-            mPhotos.add(1, new Photo(PhotoPicker.TAKE_PHOTO, mImageCaptureManager.getCurrentPhotoPath()));
-            mRecyclerView.getAdapter().notifyItemInserted(1);
+            Photo photo = new Photo(Extra.TAKE_PHOTO, mImageCaptureManager.getCurrentPhotoPath());
+            mPhotos.add(1, photo);
+            PhotoGridAdapter adapter = (PhotoGridAdapter) mRecyclerView.getAdapter();
+            if (mMaxCount > mSelectPhotos.size()) {
+                photo.select = true;
+                adapter.notifyItemInserted(1);
+                mSelectPhotos.add(photo);
+                adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
+            } else {
+                adapter.notifyItemInserted(1);
+            }
+            if (mMaxCount == 1) {
+                onClick(mCompleteBtn);
+            }
+        }
+        if (resultCode == Activity.RESULT_OK && requestCode == Extra.REQUEST_CROP) {
+            Uri resultUri = UCrop.getOutput(data);
+            if (resultUri != null) {
+                String path = resultUri.getPath();
+//                mImageCaptureManager.getPhotoScannerManager().connect(path);
+                Photo photo = mSelectPhotos.get(0);
+                photo.id = Extra.CROP;
+                photo.type = 4;
+                photo.path = path;
+                selectOver();
+            } else {
+                Toast.makeText(this, "裁剪发生不可预知的错误", Toast.LENGTH_SHORT).show();
+            }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            Throwable cropError = UCrop.getError(data);
+            Toast.makeText(this, "裁剪发生不可预知的错误", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         mImageCaptureManager.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(PhotoPicker.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
+        outState.putParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         mImageCaptureManager.onRestoreInstanceState(savedInstanceState);
-        mSelectPhotos = savedInstanceState.getParcelableArrayList(PhotoPicker.EXTRA_SELECTED_PHOTOS);
+        mSelectPhotos = savedInstanceState.getParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
@@ -315,10 +424,12 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
     }
 
     @Override
+    public void onCrop(int position, String path) {
+
+    }
+
+    @Override
     public void onDelete(int currentItem) {
-        if (mLastPosition == currentItem) {
-            mLastPosition = -1;
-        }
         mRecyclerView.getAdapter().notifyItemRemoved(currentItem);
     }
 
@@ -331,15 +442,17 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnPhotoLis
                 lastPhoto.select = false;
                 mSelectPhotos.remove(0);
             }
-            mLastPosition = currentItem;
             mSelectPhotos.add(photo);
         } else {
             mSelectPhotos.remove(photo);
-            mLastPosition = -1;
         }
         adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
         adapter.notifyDataSetChanged();
-        mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+        if (mMaxCount > 1) {
+            mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+        } else if (photo.select) {
+            onClick(mCompleteBtn);
+        }
     }
 
     @Override

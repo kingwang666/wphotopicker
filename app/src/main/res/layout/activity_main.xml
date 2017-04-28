@@ -6,12 +6,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-    <Button
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="select"
-        android:onClick="doClick"/>
+        android:layout_margin="16dp">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Photo"
+            android:onClick="doClick"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Video"
+            android:layout_gravity="end"
+            android:onClick="doClick2"/>
+    </FrameLayout>
+
+
+
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"

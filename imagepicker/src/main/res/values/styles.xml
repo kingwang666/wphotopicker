@@ -9,4 +9,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- TextAppearance -->
+    <style name="TextAppearance.App.Medium" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">12sp</item>
+    </style>
+
 </resources>
