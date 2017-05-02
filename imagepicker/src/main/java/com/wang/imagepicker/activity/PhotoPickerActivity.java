@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -28,8 +27,8 @@ import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.adapter.PhotoGridAdapter;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
-import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
 import com.wang.imagepicker.interfaces.OnMediaListener;
+import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.model.PhotoDirectory;
 import com.wang.imagepicker.utils.CropUtil;
@@ -37,7 +36,6 @@ import com.wang.imagepicker.utils.ImageCaptureManager;
 import com.wang.imagepicker.utils.MediaStoreHelper;
 import com.wang.imagepicker.utils.PermissionUtil;
 import com.wang.imagepicker.utils.PhotoPager;
-import com.wang.imagepicker.utils.PhotoPicker;
 import com.wang.imagepicker.widget.FolderPopUpWindow;
 import com.yalantis.ucrop.UCrop;
 
@@ -235,6 +233,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                 options.setCircleDimmedLayer(mIsCircle);
                 options.setToolbarColor(mToolbarBg);
                 options.setStatusBarColor(mToolbarBg);
+                options.setCompressionQuality(100);
                 CropUtil.onStartCrop(this, mSelectPhotos.get(0).path, mCropDestPath, mCropFullPath, options, Extra.REQUEST_CROP);
             } else {
                 selectOver();

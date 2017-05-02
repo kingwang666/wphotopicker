@@ -333,6 +333,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 options.withAspectRatio(mAspectRatioX, mAspectRatioY);
             }
             options.setCircleDimmedLayer(mIsCircle);
+            options.setCompressionQuality(100);
             if (mCropToolbarColor != -1) {
                 options.setToolbarColor(mCropToolbarColor);
                 options.setStatusBarColor(mCropToolbarColor);

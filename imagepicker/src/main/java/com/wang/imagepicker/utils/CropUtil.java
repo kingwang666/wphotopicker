@@ -1,8 +1,6 @@
 package com.wang.imagepicker.utils;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -30,13 +28,8 @@ public class CropUtil {
         if (destFullPath) {
             dest = destPath;
         } else {
-            if (!path.startsWith(destPath)) {
-                String[] values = path.split(File.separator);
-                dest = destPath + File.separator + values[values.length - 1];
-            } else {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
-                dest = destPath + File.separator + "crop_" + sdf.format(new Date()) + ".jpg";
-            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
+            dest = destPath + File.separator + "crop_" + sdf.format(new Date()) + ".jpg";
         }
 
         Uri uriDest = new Uri.Builder()
@@ -57,13 +50,8 @@ public class CropUtil {
         if (destFullPath) {
             dest = destPath;
         } else {
-            if (!path.startsWith(destPath)) {
-                String[] values = path.split(File.separator);
-                dest = destPath + File.separator + values[values.length - 1];
-            } else {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
-                dest = destPath + File.separator + "crop_" + sdf.format(new Date()) + ".jpg";
-            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault());
+            dest = destPath + File.separator + "crop_" + sdf.format(new Date()) + ".jpg";
         }
 
         Uri uriDest = new Uri.Builder()
