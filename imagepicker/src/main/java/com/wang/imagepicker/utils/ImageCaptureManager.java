@@ -2,15 +2,12 @@ package com.wang.imagepicker.utils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
-import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,11 +24,9 @@ public class ImageCaptureManager{
     private String mCurrentPhotoPath;
     private Context mContext;
 
-    private PhotoScannerManager mPhotoScannerManager;
 
     public ImageCaptureManager(Context context) {
         this.mContext = context.getApplicationContext();
-        mPhotoScannerManager = new PhotoScannerManager(context);
     }
 
     private File createImageFile(String dirName) throws IOException {
@@ -76,7 +71,7 @@ public class ImageCaptureManager{
 
 
     public void galleryAddPic() {
-        mPhotoScannerManager.connect(mCurrentPhotoPath);
+        PhotoScannerManager.get(mContext).connect(mCurrentPhotoPath);
 //        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 //
 //        if (TextUtils.isEmpty(mCurrentPhotoPath)) {
@@ -87,10 +82,6 @@ public class ImageCaptureManager{
 //        Uri contentUri = Uri.fromFile(f);
 //        mediaScanIntent.setData(contentUri);
 //        mContext.sendBroadcast(mediaScanIntent);
-    }
-
-    public PhotoScannerManager getPhotoScannerManager() {
-        return mPhotoScannerManager;
     }
 
     @Deprecated
@@ -121,7 +112,6 @@ public class ImageCaptureManager{
     }
 
     public void onDestroy() {
-        mPhotoScannerManager.disconnect();
         mContext = null;
     }
 }

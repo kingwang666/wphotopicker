@@ -11,11 +11,28 @@ import android.net.Uri;
 
 public class PhotoScannerManager implements MediaScannerConnection.MediaScannerConnectionClient  {
 
+    private static volatile PhotoScannerManager sInstance;
+
     private MediaScannerConnection mScanner;
 
     private String mCurrentPhotoPath;
 
-    public PhotoScannerManager(Context context){
+    public static PhotoScannerManager get(Context context) {
+        PhotoScannerManager scannerManager = sInstance;
+        if (scannerManager == null) {
+            synchronized (PhotoScannerManager.class) {
+                scannerManager = sInstance;
+                if (scannerManager == null) {
+                    scannerManager = new PhotoScannerManager(context.getApplicationContext());
+                    sInstance = scannerManager;
+                }
+            }
+        }
+        return scannerManager;
+    }
+
+
+    private PhotoScannerManager(Context context){
         mScanner = new MediaScannerConnection(context, this);
     }
 

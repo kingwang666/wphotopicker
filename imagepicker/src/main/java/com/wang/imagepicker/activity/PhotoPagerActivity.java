@@ -10,7 +10,6 @@ import com.wang.imagepicker.R;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
 import com.wang.imagepicker.model.Photo;
-import com.wang.imagepicker.utils.PhotoPager;
 
 import java.util.ArrayList;
 
@@ -60,6 +59,7 @@ public class PhotoPagerActivity extends AppCompatActivity implements OnPagerFrag
     @Override
     public void onCrop(int position, String path) {
         resultCode = RESULT_OK;
+        onBackPressed();
     }
 
     @Override

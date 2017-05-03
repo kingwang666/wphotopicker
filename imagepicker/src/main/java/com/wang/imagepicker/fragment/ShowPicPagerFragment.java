@@ -36,6 +36,7 @@ import com.wang.imagepicker.adapter.ShowPicPagerAdapter;
 import com.wang.imagepicker.interfaces.OnPagerFragmentListener;
 import com.wang.imagepicker.model.Photo;
 import com.wang.imagepicker.utils.CropUtil;
+import com.wang.imagepicker.utils.PhotoScannerManager;
 import com.wang.imagepicker.widget.HackyViewPager;
 import com.yalantis.ucrop.UCrop;
 
@@ -175,6 +176,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         mDeleteImg.setOnClickListener(this);
         mTitleTV = (TextView) rootView.findViewById(R.id.head_view_title_tv);
         mViewPager = (HackyViewPager) rootView.findViewById(R.id.view_pager);
+
         if (isPhoto) {
             mViewPager.setAdapter(new ShowPicPagerAdapter(getChildFragmentManager(), needCamera, mPhotos, mDefaultImg, this));
         } else {
@@ -258,6 +260,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             Uri resultUri = UCrop.getOutput(data);
             if (resultUri != null) {
                 String path = resultUri.getPath();
+                PhotoScannerManager.get(getContext()).connect(path);
                 if (isPhoto) {
                     Photo photo = mPhotos.get(mCurrentItem);
                     photo.id = Extra.CROP;

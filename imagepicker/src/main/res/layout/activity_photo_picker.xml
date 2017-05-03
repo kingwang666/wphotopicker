@@ -25,7 +25,6 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/back_img"
-            android:text="aa"
             android:textColor="@color/white"/>
 
         <Button

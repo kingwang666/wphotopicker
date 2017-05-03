@@ -36,6 +36,7 @@ import com.wang.imagepicker.utils.ImageCaptureManager;
 import com.wang.imagepicker.utils.MediaStoreHelper;
 import com.wang.imagepicker.utils.PermissionUtil;
 import com.wang.imagepicker.utils.PhotoPager;
+import com.wang.imagepicker.utils.PhotoScannerManager;
 import com.wang.imagepicker.widget.FolderPopUpWindow;
 import com.yalantis.ucrop.UCrop;
 
@@ -190,9 +191,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         if (mMaxCount == 1) {
             mCompleteBtn.setVisibility(View.GONE);
         }
-        if (mSelectPhotos.size() > 0) {
-            mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
-        }
+        mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
         findViewById(R.id.back_img).setOnClickListener(this);
         if (mToolbarBg != -1) {
             mToolbarView.setBackgroundColor(mToolbarBg);
@@ -289,7 +288,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
         adapter.notifyDataSetChanged();
         if (mMaxCount > 1) {
-            mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+            mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
         } else if (check) {
             onClick(mCompleteBtn);
         }
@@ -377,7 +376,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
             Uri resultUri = UCrop.getOutput(data);
             if (resultUri != null) {
                 String path = resultUri.getPath();
-//                mImageCaptureManager.getPhotoScannerManager().connect(path);
+                PhotoScannerManager.get(this).connect(path);
                 Photo photo = mSelectPhotos.get(0);
                 photo.id = Extra.CROP;
                 photo.type = 4;
@@ -448,7 +447,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
         adapter.notifyDataSetChanged();
         if (mMaxCount > 1) {
-            mCompleteBtn.setText(mSelectPhotos.size() == 0 ? "完成" : String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
+            mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
         } else if (photo.select) {
             onClick(mCompleteBtn);
         }
