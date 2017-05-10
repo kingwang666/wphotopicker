@@ -1,13 +1,17 @@
 package com.wang.imagepicker.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.Extra;
@@ -16,9 +20,11 @@ import com.wang.imagepicker.adapter.VideoGridAdapter;
 import com.wang.imagepicker.interfaces.OnMediaListener;
 import com.wang.imagepicker.model.Video;
 import com.wang.imagepicker.utils.MediaStoreHelper;
+import com.wang.imagepicker.utils.PermissionUtil;
 import com.wang.imagepicker.utils.VideoPicker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,6 +34,7 @@ import java.util.List;
 
 public class VideoPickerActivity extends AppCompatActivity implements OnMediaListener, View.OnClickListener {
 
+    private static final int GET_VIDEOS = 23;
     private RecyclerView mRecyclerView;
     private Button mCompleteBtn;
 
@@ -49,6 +56,11 @@ public class VideoPickerActivity extends AppCompatActivity implements OnMediaLis
         setContentView(R.layout.activity_video_picker);
         mVideos = new ArrayList<>();
         initData(getIntent());
+        initView();
+        requestPermissions(GET_VIDEOS, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    private void getVideos(){
         Bundle mediaStoreArgs = new Bundle();
         mediaStoreArgs.putParcelableArrayList(Extra.EXTRA_SELECTED_VIDEOS, mSelectVideos);
         MediaStoreHelper.getVideos(this, mediaStoreArgs,
@@ -62,8 +74,6 @@ public class VideoPickerActivity extends AppCompatActivity implements OnMediaLis
                         }
                     }
                 });
-        initView();
-
     }
 
     private void initData(Intent intent) {
@@ -150,6 +160,34 @@ public class VideoPickerActivity extends AppCompatActivity implements OnMediaLis
     @Override
     public void onItemClick(View v, int position, boolean check) {
         onCheck(position, !check);
+    }
+
+    public void requestPermissions(int requestCode, String... permissions) {
+
+        if (PermissionUtil.checkSelfPermission(this, permissions)) {
+            ActivityCompat.requestPermissions(this, permissions, requestCode);
+        } else {
+            requestPermissionsEnd(requestCode);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        List<String> allPermissions = Arrays.asList(permissions);
+        if (!PermissionUtil.verifyPermissions(allPermissions, grantResults)) {
+          if (requestCode == GET_VIDEOS){
+                Toast.makeText(this, "权限请求失败，相册图片", Toast.LENGTH_SHORT).show();
+          }
+        } else {
+            requestPermissionsEnd(requestCode);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void requestPermissionsEnd(int requestCode) {
+        if (requestCode == GET_VIDEOS) {
+            getVideos();
+        }
     }
 
     @Override

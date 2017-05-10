@@ -53,6 +53,9 @@ import java.util.List;
 
 public class PhotoPickerActivity extends AppCompatActivity implements OnMediaListener, OnPagerFragmentListener, View.OnClickListener {
 
+    private static final int TAKE_PHOTO = 23;
+    private static final int GET_PHOTOS = 32;
+
     private TextView mSelectDirTV;
     private TextView mPositionTV;
     private Button mCompleteBtn;
@@ -105,6 +108,11 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         mPhotos = new ArrayList<>();
         mImageCaptureManager = new ImageCaptureManager(this);
         initData(getIntent());
+        initView();
+        requestPermissions(GET_PHOTOS, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    private void getPhotos(){
         Bundle mediaStoreArgs = new Bundle();
         mediaStoreArgs.putParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
         mediaStoreArgs.putBoolean(Extra.EXTRA_SHOW_GIF, isShowGif);
@@ -130,7 +138,6 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                         }
                     }
                 });
-        initView();
     }
 
     private void initData(Intent intent) {
@@ -297,7 +304,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     @Override
     public void onItemClick(View v, int position, boolean check) {
         if (isNeedCamera && position == 0) {
-            requestPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            requestPermissions(TAKE_PHOTO, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         } else if (mPreviewEnabled) {
             int[] screenLocation = new int[2];
             v.getLocationOnScreen(screenLocation);
@@ -328,12 +335,12 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         }
     }
 
-    public void requestPermissions(String... permissions) {
+    public void requestPermissions(int requestCode, String... permissions) {
 
         if (PermissionUtil.checkSelfPermission(this, permissions)) {
-            ActivityCompat.requestPermissions(this, permissions, 0);
+            ActivityCompat.requestPermissions(this, permissions, requestCode);
         } else {
-            requestPermissionsEnd();
+            requestPermissionsEnd(requestCode);
         }
     }
 
@@ -341,15 +348,23 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         List<String> allPermissions = Arrays.asList(permissions);
         if (!PermissionUtil.verifyPermissions(allPermissions, grantResults)) {
-            Toast.makeText(this, "权限请求失败，无法进行拍照", Toast.LENGTH_SHORT).show();
+            if (requestCode == TAKE_PHOTO) {
+                Toast.makeText(this, "权限请求失败，无法进行拍照", Toast.LENGTH_SHORT).show();
+            }else if (requestCode == GET_PHOTOS){
+                Toast.makeText(this, "权限请求失败，相册图片", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            requestPermissionsEnd();
+            requestPermissionsEnd(requestCode);
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private void requestPermissionsEnd() {
-        takePhoto();
+    private void requestPermissionsEnd(int requestCode) {
+        if (requestCode == TAKE_PHOTO) {
+            takePhoto();
+        }else if (requestCode == GET_PHOTOS){
+            getPhotos();
+        }
     }
 
     @Override

@@ -3,8 +3,16 @@
 
     <application android:allowBackup="true"
                  android:label="@string/app_name"
-                 android:supportsRtl="true"
-    >
+                 android:supportsRtl="true">
+        <provider
+            android:name=".utils.PhotoPickerProvider"
+            android:authorities="com.wang.imagepicker.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/photo_paths" />
+        </provider>
 
     </application>
 
