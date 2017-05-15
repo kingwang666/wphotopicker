@@ -63,7 +63,7 @@ public class ImageCaptureManager{
 
     private Uri getFileUri(File file){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return FileProvider.getUriForFile(mContext, "com.wang.imagepicker.fileprovider", file);
+            return FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".fileprovider", file);
         } else {
             return Uri.fromFile(file);
         }

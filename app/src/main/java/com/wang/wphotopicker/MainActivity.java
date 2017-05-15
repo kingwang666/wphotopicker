@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements OnRecyclerViewCli
                 .setPreviewEnabled(true)
 //                .setSelected(mPhotos)
                 .start(this, 100);
+
     }
 
     public void doClick2(View view) {
