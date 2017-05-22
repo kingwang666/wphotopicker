@@ -52,6 +52,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
     private View mTopView;
     private View mBottomView;
     private ImageView mCropImg;
+    private TextView mBottomCropBtn;
     private CheckBox mSelectCB;
     private ImageView mDeleteImg;
     private TextView mTitleTV;
@@ -172,6 +173,8 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         mSelectCB.setOnClickListener(this);
         mCropImg = (ImageView) rootView.findViewById(R.id.head_view_crop_btn);
         mCropImg.setOnClickListener(this);
+        mBottomCropBtn = (TextView) rootView.findViewById(R.id.bottom_view_crop_btn);
+        mBottomCropBtn.setOnClickListener(this);
         mDeleteImg = (ImageView) rootView.findViewById(R.id.head_view_delete_btn);
         mDeleteImg.setOnClickListener(this);
         mTitleTV = (TextView) rootView.findViewById(R.id.head_view_title_tv);
@@ -184,7 +187,13 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
         }
         mViewPager.setCurrentItem(needCamera ? mStartItem - 1 : mStartItem);
         if (isPhoto) {
-            mSelectCB.setChecked(mPhotos.get(mStartItem).select);
+            if (mPhotos.get(mStartItem).select) {
+                mSelectCB.setChecked(true);
+                mBottomCropBtn.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
+            }else {
+                mSelectCB.setChecked(false);
+                mBottomCropBtn.setVisibility(View.GONE);
+            }
             mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mStartItem : (mStartItem + 1), needCamera ? mPhotos.size() - 1 : mPhotos.size()));
         } else {
             mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mStartItem : (mStartItem + 1), needCamera ? mPaths.size() - 1 : mPaths.size()));
@@ -234,7 +243,13 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 //                hasAnim = mStartItem == position;
                 if (isPhoto) {
                     Photo photo = mPhotos.get(mCurrentItem);
-                    mSelectCB.setChecked(photo.select);
+                    if (photo.select) {
+                        mSelectCB.setChecked(true);
+                        mBottomCropBtn.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
+                    }else {
+                        mSelectCB.setChecked(false);
+                        mBottomCropBtn.setVisibility(View.GONE);
+                    }
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), position + 1, needCamera ? mPhotos.size() - 1 : mPhotos.size()));
                 } else {
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), position + 1, needCamera ? mPaths.size() - 1 : mPaths.size()));
@@ -266,11 +281,11 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                     photo.id = Extra.CROP;
                     photo.type = 4;
                     photo.path = path;
-                }else {
+                } else {
                     mPaths.set(mCurrentItem, path);
                 }
                 mViewPager.getAdapter().notifyDataSetChanged();
-                if (mListener != null){
+                if (mListener != null) {
                     mListener.onCrop(mCurrentItem, path);
                 }
             } else {
@@ -289,6 +304,11 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             if (isPhoto) {
                 Photo photo = mPhotos.get(mCurrentItem);
                 photo.select = !photo.select;
+                if (photo.select) {
+                    mBottomCropBtn.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
+                }else {
+                    mBottomCropBtn.setVisibility(View.GONE);
+                }
                 if (mListener != null) {
                     mListener.onSelect(photo, mCurrentItem);
                 }
@@ -308,7 +328,13 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                     if (mListener != null) {
                         mListener.onScrolled(needCamera ? mCurrentItem - 1 : mCurrentItem);
                     }
-                    mSelectCB.setChecked(mPhotos.get(mCurrentItem).select);
+                    if (mPhotos.get(mCurrentItem).select) {
+                        mSelectCB.setChecked(true);
+                        mBottomCropBtn.setVisibility(isShowCrop ? View.VISIBLE : View.GONE);
+                    }else {
+                        mSelectCB.setChecked(false);
+                        mBottomCropBtn.setVisibility(View.GONE);
+                    }
                     mTitleTV.setText(String.format("%d/%d".toLowerCase(), needCamera ? mCurrentItem : mCurrentItem + 1, needCamera ? mPhotos.size() - 1 : mPhotos.size()));
                 }
             } else {
@@ -325,7 +351,7 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
                 }
             }
             mViewPager.setCurrentItem(needCamera ? mCurrentItem - 1 : mCurrentItem);
-        } else if (i == R.id.head_view_crop_btn) {
+        } else if (i == R.id.head_view_crop_btn || i == R.id.bottom_view_crop_btn) {
             UCrop.Options options = new UCrop.Options();
             options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
             options.setFreeStyleCropEnabled(mFreeStyle);
@@ -458,16 +484,16 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
             return;
         }
 
-        final long duration = ANIM_DURATION;
+        final long duration = toOlderPosition ? ANIM_DURATION : ANIM_DURATION / 2;
 
         // Animate image back to thumbnail size/location
         ViewPropertyAnimator.animate(mViewPager)
                 .setDuration(duration)
                 .setInterpolator(new AccelerateInterpolator())
-                .scaleX((float) thumbnailWidth / mViewPager.getWidth())
-                .scaleY((float) thumbnailHeight / mViewPager.getHeight())
-                .translationX(toOlderPosition ? thumbnailLeft : ((mViewPager.getWidth() - thumbnailWidth) / 2))
-                .translationY(toOlderPosition ? thumbnailTop : ((mViewPager.getHeight() - thumbnailHeight) / 2))
+                .scaleX(toOlderPosition ? ((float) thumbnailWidth / mViewPager.getWidth()) : 0.8f)
+                .scaleY(toOlderPosition ? ((float) thumbnailHeight / mViewPager.getHeight()) : 0.8f)
+                .translationX(toOlderPosition ? thumbnailLeft : (mViewPager.getWidth() / 10))
+                .translationY(toOlderPosition ? thumbnailTop : (mViewPager.getHeight() / 10))
                 .setListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {

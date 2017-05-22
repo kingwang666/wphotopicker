@@ -112,7 +112,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         requestPermissions(GET_PHOTOS, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
-    private void getPhotos(){
+    private void getPhotos() {
         Bundle mediaStoreArgs = new Bundle();
         mediaStoreArgs.putParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
         mediaStoreArgs.putBoolean(Extra.EXTRA_SHOW_GIF, isShowGif);
@@ -153,22 +153,20 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
             isNeedCamera = isShowCamera;
             mPreviewEnabled = intent.getBooleanExtra(Extra.EXTRA_PREVIEW_ENABLED, true);
             mMaxCount = intent.getIntExtra(Extra.EXTRA_MAX_COUNT, mMaxCount);
-            if (mMaxCount == 1) {
-                mCrop = intent.getBooleanExtra(Extra.EXTRA_CROP, false);
-                if (mCrop) {
-                    mCropFullPath = intent.getBooleanExtra(Extra.EXTRA_CROP_FULL_PATH, false);
-                    mCropDestPath = intent.getStringExtra(Extra.EXTRA_CROP_DEST_PATH);
-                    mIsCircle = intent.getBooleanExtra(Extra.EXTRA_CROP_CIRCLE, false);
-                    if (TextUtils.isEmpty(mCropDestPath)) {
-                        mCropFullPath = false;
-                        mCropDestPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo";
-                    }
-                    mAspectRatioX = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_X, 0f);
-                    mAspectRatioY = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_Y, 0f);
-                    mMaxWidth = intent.getIntExtra(Extra.EXTRA_CROP_MAX_WIDTH, 0);
-                    mMaxHeight = intent.getIntExtra(Extra.EXTRA_CROP_MAX_HEIGHT, 0);
-                    mFreeStyle = intent.getBooleanExtra(Extra.EXTRA_CROP_FREE_STYLE, false);
+            mCrop = intent.getBooleanExtra(Extra.EXTRA_CROP, false);
+            if (mCrop) {
+                mCropFullPath = intent.getBooleanExtra(Extra.EXTRA_CROP_FULL_PATH, false);
+                mCropDestPath = intent.getStringExtra(Extra.EXTRA_CROP_DEST_PATH);
+                mIsCircle = intent.getBooleanExtra(Extra.EXTRA_CROP_CIRCLE, false);
+                if (TextUtils.isEmpty(mCropDestPath)) {
+                    mCropFullPath = false;
+                    mCropDestPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo";
                 }
+                mAspectRatioX = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_X, 0f);
+                mAspectRatioY = intent.getFloatExtra(Extra.EXTRA_CROP_ASPECT_RATIO_Y, 0f);
+                mMaxWidth = intent.getIntExtra(Extra.EXTRA_CROP_MAX_WIDTH, 0);
+                mMaxHeight = intent.getIntExtra(Extra.EXTRA_CROP_MAX_HEIGHT, 0);
+                mFreeStyle = intent.getBooleanExtra(Extra.EXTRA_CROP_FREE_STYLE, false);
             }
             mSaveDirName = intent.getStringExtra(Extra.EXTRA_SAVE_DIR);
             if (TextUtils.isEmpty(mSaveDirName)) {
@@ -226,7 +224,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.complete_btn) {
-            if (mCrop && mSelectPhotos.size() == 1) {
+            if (mCrop && mMaxCount == 1 && mSelectPhotos.size() == 1) {
                 UCrop.Options options = new UCrop.Options();
                 options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
                 options.setFreeStyleCropEnabled(mFreeStyle);
@@ -316,6 +314,15 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                     .setHasAnim(true)
                     .setShowTop(false)
                     .setShowBottom(true)
+                    .setShowCrop(mCrop && mMaxCount > 1)
+                    .setCropFreeStyleEnable(mFreeStyle)
+                    .setCropMaxHeight(mMaxHeight)
+                    .setCropMaxWidth(mMaxWidth)
+                    .setCropAspectRatioX(mAspectRatioX)
+                    .setCropAspectRatioY(mAspectRatioY)
+                    .setCropCircle(mIsCircle)
+                    .setCropToolbarColor(mToolbarBg)
+                    .setCropDirPath(mCropDestPath)
                     .setThumbanil(screenLocation, v.getWidth(), v.getHeight())
                     .getBundle();
             getSupportFragmentManager()
@@ -350,7 +357,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         if (!PermissionUtil.verifyPermissions(allPermissions, grantResults)) {
             if (requestCode == TAKE_PHOTO) {
                 Toast.makeText(this, "权限请求失败，无法进行拍照", Toast.LENGTH_SHORT).show();
-            }else if (requestCode == GET_PHOTOS){
+            } else if (requestCode == GET_PHOTOS) {
                 Toast.makeText(this, "权限请求失败，相册图片", Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -362,7 +369,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     private void requestPermissionsEnd(int requestCode) {
         if (requestCode == TAKE_PHOTO) {
             takePhoto();
-        }else if (requestCode == GET_PHOTOS){
+        } else if (requestCode == GET_PHOTOS) {
             getPhotos();
         }
     }
@@ -438,7 +445,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
 
     @Override
     public void onCrop(int position, String path) {
-
+        mRecyclerView.getAdapter().notifyItemChanged(position);
     }
 
     @Override

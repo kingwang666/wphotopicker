@@ -1,6 +1,7 @@
 package com.wang.wphotopicker;
 
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -13,6 +14,7 @@ import com.wang.imagepicker.utils.PhotoPager;
 import com.wang.imagepicker.utils.PhotoPicker;
 import com.wang.imagepicker.utils.VideoPicker;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements OnRecyclerViewClickListener {
@@ -31,13 +33,16 @@ public class MainActivity extends AppCompatActivity implements OnRecyclerViewCli
     }
 
     public void doClick(View view) {
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Photo");
+        file.mkdirs();
         PhotoPicker.builder()
                 .setGridColumnCount(3)
                 .setPhotoCount(9)
-//                .setCrop(true)
-//                .setCropCircle(true)
+                .setCrop(true)
+                .setCropCircle(true)
+                .setCropDirPath(file.getAbsolutePath())
                 .setPreviewEnabled(true)
-//                .setSelected(mPhotos)
+                .setSelected(mPhotos)
                 .start(this, 100);
 
     }
