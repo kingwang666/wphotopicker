@@ -398,7 +398,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
             Uri resultUri = UCrop.getOutput(data);
             if (resultUri != null) {
                 String path = resultUri.getPath();
-                PhotoScannerManager.get(this).connect(path);
+//                PhotoScannerManager.get(this).connect(path);
                 Photo photo = mSelectPhotos.get(0);
                 photo.id = Extra.CROP;
                 photo.type = 4;
