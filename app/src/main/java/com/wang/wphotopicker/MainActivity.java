@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements OnRecyclerViewCli
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         mRecyclerView.setAdapter(new PhotoAdapter(mPhotos, this));
+
     }
 
     public void doClick(View view) {

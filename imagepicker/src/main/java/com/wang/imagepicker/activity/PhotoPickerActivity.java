@@ -25,7 +25,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.wang.imagepicker.Extra;
 import com.wang.imagepicker.R;
-import com.wang.imagepicker.RecyclerViewPreloader;
 import com.wang.imagepicker.adapter.PhotoGridAdapter;
 import com.wang.imagepicker.fragment.ShowPicPagerFragment;
 import com.wang.imagepicker.interfaces.OnMediaListener;
@@ -37,7 +36,6 @@ import com.wang.imagepicker.utils.ImageCaptureManager;
 import com.wang.imagepicker.utils.MediaStoreHelper;
 import com.wang.imagepicker.utils.PermissionUtil;
 import com.wang.imagepicker.utils.PhotoPager;
-import com.wang.imagepicker.utils.PhotoScannerManager;
 import com.wang.imagepicker.widget.FolderPopUpWindow;
 import com.yalantis.ucrop.UCrop;
 
@@ -187,9 +185,6 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, mColumn));
         mRecyclerView.setHasFixedSize(true);
         PhotoGridAdapter adapter = new PhotoGridAdapter(mPhotos, isShowCamera, mSelectPhotos.size() < mMaxCount || mMaxCount == 1, this);
-        RecyclerViewPreloader<Photo> preloader =
-                new RecyclerViewPreloader<>(Glide.with(this), adapter, adapter, 3);
-        mRecyclerView.addOnScrollListener(preloader);
         mRecyclerView.setAdapter(adapter);
         mPositionTV = (TextView) findViewById(R.id.position_tv);
         mToolbarView = findViewById(R.id.toolbar_view);

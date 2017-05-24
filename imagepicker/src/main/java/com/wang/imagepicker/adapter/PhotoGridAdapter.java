@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.interfaces.OnMediaListener;
@@ -25,8 +27,7 @@ import java.util.List;
 
 
 
-public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ListPreloader.PreloadSizeProvider<Photo>,
-        ListPreloader.PreloadModelProvider<Photo>{
+public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     public static final int TYPE_PHOTO = 1;
     public static final int TYPE_CAMERA = 2;
@@ -37,8 +38,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private List<Photo> mPhotos;
     private OnMediaListener mListener;
 
-    private int[] actualDimensions;
-
+//    private RequestManager mManager;
 
     public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnMediaListener listener) {
         mPhotos = new ArrayList<>();
@@ -46,12 +46,16 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mShowCamera = showCamera;
         mCheckEnabled = checkEnabled;
         mListener = listener;
+
     }
 
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        mContext = parent.getContext();
+        if (mContext == null) {
+            mContext = parent.getContext();
+//            mManager = Glide.with(mContext);
+        }
         switch (viewType) {
             case TYPE_CAMERA: {
                 View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_camera, parent, false);
@@ -59,18 +63,6 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
             case TYPE_PHOTO: {
                 final View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_photo, parent, false);
-                if (actualDimensions == null) {
-                    itemView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                        @Override
-                        public boolean onPreDraw() {
-                            if (actualDimensions == null) {
-                                actualDimensions = new int[]{itemView.getWidth(), itemView.getHeight()};
-                            }
-                            itemView.getViewTreeObserver().removeOnPreDrawListener(this);
-                            return true;
-                        }
-                    });
-                }
                 return new PhotoViewHolder(itemView);
             }
         }
@@ -92,8 +84,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 options.centerCrop();
                 options.placeholder(R.mipmap.default_image);
                 options.error(R.mipmap.default_image);
-                Glide.with(mContext)
-                        .load(new File(photo.path))
+                Glide.with(mContext).load(new File(photo.path))
                         .apply(options)
                         .thumbnail(0.1f)
                         .into(vh.mPhotoImg);
@@ -149,28 +140,6 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
-    @Override
-    public List<Photo> getPreloadItems(int position) {
-        return mPhotos.subList(position, position + 3);
-    }
-
-    @Override
-    public RequestBuilder getPreloadRequestBuilder(Photo item) {
-        RequestOptions options = new RequestOptions();
-        options.dontAnimate();
-        options.dontTransform();
-        options.centerCrop();
-        options.placeholder(R.mipmap.default_image);
-        options.error(R.mipmap.default_image);
-        return Glide.with(mContext)
-                .load(new File(item.path));
-    }
-
-    @Nullable
-    @Override
-    public int[] getPreloadSize(Photo item, int adapterPosition, int perItemPosition) {
-        return actualDimensions;
-    }
 
     class PhotoViewHolder extends RecyclerView.ViewHolder {
 
