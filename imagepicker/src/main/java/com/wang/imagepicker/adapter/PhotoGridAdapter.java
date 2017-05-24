@@ -1,25 +1,32 @@
 package com.wang.imagepicker.adapter;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.ListPreloader;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.request.RequestOptions;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.interfaces.OnMediaListener;
 import com.wang.imagepicker.model.Photo;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
 
-public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ListPreloader.PreloadSizeProvider<Photo>,
+        ListPreloader.PreloadModelProvider<Photo>{
 
     public static final int TYPE_PHOTO = 1;
     public static final int TYPE_CAMERA = 2;
@@ -29,6 +36,8 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private Context mContext;
     private List<Photo> mPhotos;
     private OnMediaListener mListener;
+
+    private int[] actualDimensions;
 
 
     public PhotoGridAdapter(List<Photo> photos, boolean showCamera, boolean checkEnabled, OnMediaListener listener) {
@@ -49,7 +58,19 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 return new CameraViewHolder(itemView);
             }
             case TYPE_PHOTO: {
-                View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_photo, parent, false);
+                final View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_photo, parent, false);
+                if (actualDimensions == null) {
+                    itemView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            if (actualDimensions == null) {
+                                actualDimensions = new int[]{itemView.getWidth(), itemView.getHeight()};
+                            }
+                            itemView.getViewTreeObserver().removeOnPreDrawListener(this);
+                            return true;
+                        }
+                    });
+                }
                 return new PhotoViewHolder(itemView);
             }
         }
@@ -65,14 +86,16 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             case TYPE_PHOTO: {
                 PhotoViewHolder vh = (PhotoViewHolder) holder;
                 Photo photo = mPhotos.get(position);
+                RequestOptions options = new RequestOptions();
+                options.dontAnimate();
+                options.dontTransform();
+                options.centerCrop();
+                options.placeholder(R.mipmap.default_image);
+                options.error(R.mipmap.default_image);
                 Glide.with(mContext)
                         .load(new File(photo.path))
-                        .dontAnimate()
-                        .dontTransform()
-                        .centerCrop()
+                        .apply(options)
                         .thumbnail(0.1f)
-                        .placeholder(R.mipmap.default_image)
-                        .error(R.mipmap.default_image)
                         .into(vh.mPhotoImg);
                 if (photo.select) {
                     vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.percent50BlackColor));
@@ -102,7 +125,8 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
         if (holder.getItemViewType() == TYPE_PHOTO) {
-            Glide.clear(((PhotoViewHolder) holder).mPhotoImg);
+//            Glide.clear(((PhotoViewHolder) holder).mPhotoImg);
+            Glide.with(mContext).clear(((PhotoViewHolder) holder).mPhotoImg);
         }
         super.onViewRecycled(holder);
     }
@@ -123,6 +147,29 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         else if (!showCamera && photo.path.equals("camera")){
             mPhotos.remove(0);
         }
+    }
+
+    @Override
+    public List<Photo> getPreloadItems(int position) {
+        return mPhotos.subList(position, position + 3);
+    }
+
+    @Override
+    public RequestBuilder getPreloadRequestBuilder(Photo item) {
+        RequestOptions options = new RequestOptions();
+        options.dontAnimate();
+        options.dontTransform();
+        options.centerCrop();
+        options.placeholder(R.mipmap.default_image);
+        options.error(R.mipmap.default_image);
+        return Glide.with(mContext)
+                .load(new File(item.path));
+    }
+
+    @Nullable
+    @Override
+    public int[] getPreloadSize(Photo item, int adapterPosition, int perItemPosition) {
+        return actualDimensions;
     }
 
     class PhotoViewHolder extends RecyclerView.ViewHolder {

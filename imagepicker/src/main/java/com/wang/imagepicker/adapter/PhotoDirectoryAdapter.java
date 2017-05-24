@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.interfaces.OnRecyclerViewListener;
 import com.wang.imagepicker.model.PhotoDirectory;
@@ -45,8 +46,10 @@ public class PhotoDirectoryAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         PhotoDirectory photoDirectory = mList.get(position);
         FolderViewHolder vh = (FolderViewHolder) holder;
+        RequestOptions options = new RequestOptions();
+        options.centerCrop();
         Glide.with(mContext).load(new File(photoDirectory.coverPath))
-                .centerCrop()
+                .apply(options)
                 .into(vh.mCoverImg);
         vh.mSelectCB.setSelected(photoDirectory.select);
         vh.mNameTV.setText(photoDirectory.name);

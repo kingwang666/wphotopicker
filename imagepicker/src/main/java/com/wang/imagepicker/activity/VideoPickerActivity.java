@@ -96,6 +96,7 @@ public class VideoPickerActivity extends AppCompatActivity implements OnMediaLis
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, mColumn));
         mRecyclerView.setAdapter(new VideoGridAdapter(mVideos, mSelectVideos.size() < mMaxCount, this));
+        mRecyclerView.setHasFixedSize(true);
         mCompleteBtn = (Button) findViewById(R.id.complete_btn);
         if (mMaxCount == 1){
             mCompleteBtn.setVisibility(View.GONE);

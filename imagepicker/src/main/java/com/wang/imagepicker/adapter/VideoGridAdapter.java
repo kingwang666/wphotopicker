@@ -45,13 +45,13 @@ public class VideoGridAdapter extends RecyclerView.Adapter<VideoGridAdapter.Vide
     public void onBindViewHolder(VideoViewHolder vh, int position) {
         Video video = mVideos.get(position);
         Context context = vh.itemView.getContext();
-        Glide.with(context)
-                .load(video.path)
-                .crossFade()
-                .centerCrop()
-                .placeholder(R.mipmap.default_image)
-                .error(R.mipmap.default_image)
-                .into(vh.mVideoImg);
+//        Glide.with(context)
+//                .load(video.path)
+//                .crossFade()
+//                .centerCrop()
+//                .placeholder(R.mipmap.default_image)
+//                .error(R.mipmap.default_image)
+//                .into(vh.mVideoImg);
         vh.mDurTV.setText(video.getDuration());
         vh.mSizeTV.setText(video.getSize());
         if (video.select) {
@@ -67,7 +67,7 @@ public class VideoGridAdapter extends RecyclerView.Adapter<VideoGridAdapter.Vide
 
     @Override
     public void onViewRecycled(VideoViewHolder holder) {
-        Glide.clear(holder.mVideoImg);
+//        Glide.clear(holder.mVideoImg);
         super.onViewRecycled(holder);
     }
 

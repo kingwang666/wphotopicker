@@ -40,7 +40,7 @@ public class FolderPopUpWindow extends PopupWindow implements View.OnClickListen
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
         mRecyclerView.setAdapter(new PhotoDirectoryAdapter(photoDirectories, listener));
-
+        mRecyclerView.setHasFixedSize(true);
         setContentView(view);
         setWidth(ViewGroup.LayoutParams.MATCH_PARENT);  //如果不设置，就是 AnchorView 的宽度
         setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
