@@ -76,6 +76,12 @@ public class VideoGridAdapter extends RecyclerView.Adapter<VideoGridAdapter.Vide
         }
     }
 
+    @Override
+    public void onViewRecycled(VideoViewHolder holder) {
+        Glide.with(mContext).clear(holder.mVideoImg);
+        super.onViewRecycled(holder);
+    }
+
     public void setCheckEnabled(boolean checkEnabled) {
         if (mCheckEnabled != checkEnabled) {
             mCheckEnabled = checkEnabled;

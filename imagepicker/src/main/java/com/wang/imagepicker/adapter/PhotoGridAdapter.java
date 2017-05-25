@@ -94,6 +94,14 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        if (holder.getItemViewType() == TYPE_PHOTO) {
+            Glide.with(mContext).clear(((PhotoViewHolder) holder).mPhotoImg);
+        }
+        super.onViewRecycled(holder);
+    }
+
+    @Override
     public int getItemCount() {
         return mPhotos.size();
     }
