@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.github.chrisbanes.photoview.OnOutsidePhotoTapListener;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoView;
@@ -88,7 +89,7 @@ public class ShowPicFragment extends BaseShowPicFragment {
             @Override
             public void run() {
                 if (mItemImg != null && getActivity() != null){
-//                    Glide.with(ShowPicFragment.this).load(mUrl).error(mDefaultImg).into(mItemImg);
+                    Glide.with(ShowPicFragment.this).load(mUrl).apply(new RequestOptions().error(mDefaultImg)).into(mItemImg);
                 }
             }
         }, 200);
@@ -100,7 +101,7 @@ public class ShowPicFragment extends BaseShowPicFragment {
         if ( mItemImg == null || TextUtils.isEmpty(mUrl) || getActivity() == null){
             return;
         }
-//        Glide.with(this).load(mUrl).error(mDefaultImg).into(mItemImg);
+        Glide.with(this).load(mUrl).apply(new RequestOptions().error(mDefaultImg)).into(mItemImg);
     }
 
     public ShowPicFragment setOnPhotoViewClickListener(ShowPicPagerAdapter.OnPhotoViewClickListener listener){

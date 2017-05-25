@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
 import com.wang.imagepicker.R;
 import com.wang.imagepicker.interfaces.OnMediaListener;
 import com.wang.imagepicker.model.Photo;
@@ -29,50 +31,53 @@ public class VideoGridAdapter extends RecyclerView.Adapter<VideoGridAdapter.Vide
     private List<Video> mVideos;
     private OnMediaListener mListener;
 
+    private Context mContext;
+
+    private RequestOptions mOptions;
+
     public VideoGridAdapter(List<Video> videos, boolean checkEnabled, OnMediaListener listener) {
         mCheckEnabled = checkEnabled;
         mVideos = videos;
         mListener = listener;
+        mOptions = new RequestOptions();
+        mOptions.dontAnimate();
+        mOptions.dontTransform();
+        mOptions.centerCrop();
+        mOptions.placeholder(R.mipmap.default_image);
+        mOptions.error(R.mipmap.default_image);
     }
 
     @Override
     public VideoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video, parent, false);
+        if (mContext == null) {
+            mContext = parent.getContext();
+        }
+        View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_video, parent, false);
         return new VideoViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(VideoViewHolder vh, int position) {
         Video video = mVideos.get(position);
-        Context context = vh.itemView.getContext();
-//        Glide.with(context)
-//                .load(video.path)
-//                .crossFade()
-//                .centerCrop()
-//                .placeholder(R.mipmap.default_image)
-//                .error(R.mipmap.default_image)
-//                .into(vh.mVideoImg);
+        Glide.with(mContext)
+                .load(video.path)
+                .apply(mOptions)
+                .into(vh.mVideoImg);
         vh.mDurTV.setText(video.getDuration());
         vh.mSizeTV.setText(video.getSize());
         if (video.select) {
-            vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(context, R.color.percent50BlackColor));
+            vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.percent50BlackColor));
             vh.mSelectedImg.setSelected(true);
             vh.mSelectedImg.setEnabled(true);
         } else {
-            vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(context, R.color.percent10BlackColor));
+            vh.mMaskerView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.percent10BlackColor));
             vh.mSelectedImg.setSelected(false);
             vh.mSelectedImg.setEnabled(mCheckEnabled);
         }
     }
 
-    @Override
-    public void onViewRecycled(VideoViewHolder holder) {
-//        Glide.clear(holder.mVideoImg);
-        super.onViewRecycled(holder);
-    }
-
     public void setCheckEnabled(boolean checkEnabled) {
-        if (mCheckEnabled != checkEnabled){
+        if (mCheckEnabled != checkEnabled) {
             mCheckEnabled = checkEnabled;
             notifyDataSetChanged();
         }
