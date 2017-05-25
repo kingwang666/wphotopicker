@@ -17,7 +17,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <meta-data
+            android:name="com.wang.wphotopicker.MyOkhttpGlideModule"
+            android:value="GlideModule"/>
         <!--Required-->
         <provider
             android:name="android.support.v4.content.FileProvider"
