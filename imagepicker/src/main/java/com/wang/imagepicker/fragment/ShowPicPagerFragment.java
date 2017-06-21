@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -503,8 +504,9 @@ public class ShowPicPagerFragment extends Fragment implements View.OnClickListen
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (fullscreen) {
-                            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        FragmentActivity activity = getActivity();
+                        if (fullscreen && activity != null) {
+                            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                         }
                         endAction.run();
                     }
