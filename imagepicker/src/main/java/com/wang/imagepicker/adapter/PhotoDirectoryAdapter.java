@@ -48,7 +48,7 @@ public class PhotoDirectoryAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         FolderViewHolder vh = (FolderViewHolder) holder;
         RequestOptions options = new RequestOptions();
         options.centerCrop();
-        Glide.with(mContext).load(new File(photoDirectory.coverPath))
+        Glide.with(mContext).load(photoDirectory.coverPath)
                 .apply(options)
                 .into(vh.mCoverImg);
         vh.mSelectCB.setSelected(photoDirectory.select);

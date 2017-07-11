@@ -244,9 +244,11 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                 selectOver();
             }
         } else if (i == R.id.select_dir_tv) {
-            mPopUpWindow = new FolderPopUpWindow(PhotoPickerActivity.this, mPhotoDirectories, this);
-            mPopUpWindow.setMargin(mBottomView.getHeight());
-            mPopUpWindow.showAtLocation(mBottomView, Gravity.NO_GRAVITY, 0, 0);
+//            if (mPhotoDirectories.size() > 1) {
+                mPopUpWindow = new FolderPopUpWindow(PhotoPickerActivity.this, mPhotoDirectories, this);
+                mPopUpWindow.setMargin(mBottomView.getHeight());
+                mPopUpWindow.showAtLocation(mBottomView, Gravity.NO_GRAVITY, 0, 0);
+//            }
         } else if (i == R.id.back_img) {
             onBackPressed();
         }
