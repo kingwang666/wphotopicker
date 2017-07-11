@@ -123,7 +123,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mShowCamera = showCamera;
         Photo photo = mPhotos.get(0);
         if (showCamera && !photo.path.equals("camera")) {
-            mPhotos.add(new Photo(-1, "camera"));
+            mPhotos.add(0, new Photo(-1, "camera"));
         } else if (!showCamera && photo.path.equals("camera")) {
             mPhotos.remove(0);
         }

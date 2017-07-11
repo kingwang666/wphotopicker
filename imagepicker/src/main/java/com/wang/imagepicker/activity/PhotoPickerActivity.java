@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -52,6 +53,7 @@ import java.util.List;
 
 public class PhotoPickerActivity extends AppCompatActivity implements OnMediaListener, OnPagerFragmentListener, View.OnClickListener {
 
+    private static final String KEY_PHOTO_DIR = "key_photo_dir";
     private static final int TAKE_PHOTO = 23;
     private static final int GET_PHOTOS = 32;
 
@@ -108,7 +110,9 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         mImageCaptureManager = new ImageCaptureManager(this);
         initData(getIntent());
         initView();
-        requestPermissions(GET_PHOTOS, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (savedInstanceState == null) {
+            requestPermissions(GET_PHOTOS, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     private void getPhotos() {
@@ -123,6 +127,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                         PhotoDirectory directory = dirs.get(0);
                         directory.select = true;
                         mPhotoDirectories.addAll(dirs);
+                        mPhotos.clear();
                         mPhotos.add(new Photo(-1, "camera"));
                         mPhotos.addAll(directory.photos);
                         if (mRecyclerView != null) {
@@ -188,11 +193,6 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
         mRecyclerView.setAdapter(adapter);
         mPositionTV = (TextView) findViewById(R.id.position_tv);
         mToolbarView = findViewById(R.id.toolbar_view);
-        if (mPhotos.size() > 0) {
-            mName = mPhotoDirectories.get(0).name;
-            mSelectDirTV.setText(mName);
-            mPositionTV.setText(mName);
-        }
         mCompleteBtn = (Button) findViewById(R.id.complete_btn);
         if (mMaxCount == 1) {
             mCompleteBtn.setVisibility(View.GONE);
@@ -388,9 +388,11 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                 adapter.notifyItemInserted(1);
                 mSelectPhotos.add(photo);
                 adapter.setCheckEnabled(mSelectPhotos.size() < mMaxCount || mMaxCount == 1);
+                mCompleteBtn.setText(String.format("完成(%d/%d)".toLowerCase(), mSelectPhotos.size(), mMaxCount));
             } else {
                 adapter.notifyItemInserted(1);
             }
+            mPhotoDirectories.get(0).photos.add(0, photo);
             if (mMaxCount == 1) {
                 onClick(mCompleteBtn);
             }
@@ -418,6 +420,7 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     protected void onSaveInstanceState(Bundle outState) {
         mImageCaptureManager.onSaveInstanceState(outState);
         outState.putParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS, mSelectPhotos);
+        outState.putParcelableArrayList(KEY_PHOTO_DIR, mPhotoDirectories);
         super.onSaveInstanceState(outState);
     }
 
@@ -425,6 +428,10 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         mImageCaptureManager.onRestoreInstanceState(savedInstanceState);
         mSelectPhotos = savedInstanceState.getParcelableArrayList(Extra.EXTRA_SELECTED_PHOTOS);
+        mPhotoDirectories = savedInstanceState.getParcelableArrayList(KEY_PHOTO_DIR);
+        mPhotos.clear();
+        mPhotos.add(new Photo(-1, "camera"));
+        mPhotos.addAll(mPhotoDirectories.get(0).photos);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
