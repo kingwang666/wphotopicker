@@ -92,4 +92,9 @@ public class MainActivity extends AppCompatActivity implements OnRecyclerViewCli
             mRecyclerView.getAdapter().notifyDataSetChanged();
         }
     }
+
+    public void doClick1(View view) {
+        Intent intent = new Intent(this, BinaryActivity.class);
+        startActivity(intent);
+    }
 }
