@@ -48,11 +48,11 @@ public class ImageUtil {
         /**
          * 总的灰度值
          */
-        double sumGrey = 0;
+        int sumGrey = 0;
         /**
          * 总的前景灰度值
          */
-        double sumFrontGrey = 0;
+        int sumFrontGrey = 0;
         /**
          * 阈值
          */
@@ -78,7 +78,7 @@ public class ImageUtil {
          */
         double u1;
         /**
-         *类间方差最大
+         *最大类间方差
          */
         double maxG = 0;
         /**
@@ -99,7 +99,7 @@ public class ImageUtil {
 
         if (binaryPixels.length != n) {
             Log.e("Error", "the binary pixel length must = width * height");
-            binaryPixels = new int[n];
+            return -1;
         }
 
 
@@ -124,9 +124,9 @@ public class ImageUtil {
             if (n1 == 0) {
                 break;
             }
-            sumFrontGrey += (double) i * hist[i];
-            u0 = sumFrontGrey / n0;
-            u1 = (sumGrey - sumFrontGrey) / n1;
+            sumFrontGrey += i * hist[i];
+            u0 = (double)sumFrontGrey / n0;
+            u1 = (double)(sumGrey - sumFrontGrey) / n1;
             g = (double) n0 * n1 * (u0 - u1) * (u0 - u1);
 //            类间方差最大的分割意味着错分概率最小
             if (g > maxG) {
