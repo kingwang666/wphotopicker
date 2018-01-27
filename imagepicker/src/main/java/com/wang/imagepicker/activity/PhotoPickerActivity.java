@@ -128,7 +128,9 @@ public class PhotoPickerActivity extends AppCompatActivity implements OnMediaLis
                         directory.select = true;
                         mPhotoDirectories.addAll(dirs);
                         mPhotos.clear();
-                        mPhotos.add(new Photo(-1, "camera"));
+                        if (isShowCamera) {
+                            mPhotos.add(new Photo(-1, "camera"));
+                        }
                         mPhotos.addAll(directory.photos);
                         if (mRecyclerView != null) {
                             mName = directory.name;
